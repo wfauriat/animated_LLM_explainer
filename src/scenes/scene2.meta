@@ -1,0 +1,30 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "character",
+      "targetTime": 0.5
+    },
+    {
+      "name": "cable",
+      "targetTime": 2.7
+    },
+    {
+      "name": "split",
+      "targetTime": 6.3999999999999995
+    },
+    {
+      "name": "server",
+      "targetTime": 8.2
+    },
+    {
+      "name": "user-wire",
+      "targetTime": 10.850000000000009
+    },
+    {
+      "name": "many-users",
+      "targetTime": 13.65000000000001
+    }
+  ],
+  "seed": 3555362287
+}

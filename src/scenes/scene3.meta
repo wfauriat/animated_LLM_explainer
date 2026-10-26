@@ -1,0 +1,26 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "user-leaves",
+      "targetTime": 0.5
+    },
+    {
+      "name": "zoom-in",
+      "targetTime": 2
+    },
+    {
+      "name": "unscrew",
+      "targetTime": 5.4
+    },
+    {
+      "name": "cover-off",
+      "targetTime": 8.8
+    },
+    {
+      "name": "battery",
+      "targetTime": 14.77
+    }
+  ],
+  "seed": 2900565317
+}

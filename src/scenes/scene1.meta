@@ -1,0 +1,26 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "user-1",
+      "targetTime": 1.4
+    },
+    {
+      "name": "bot-1",
+      "targetTime": 4.391666666666667
+    },
+    {
+      "name": "user-2",
+      "targetTime": 9.941666666666666
+    },
+    {
+      "name": "bot-2",
+      "targetTime": 14.391666666666664
+    },
+    {
+      "name": "zoom-out",
+      "targetTime": 21.24166666666666
+    }
+  ],
+  "seed": 1795331278
+}
