@@ -1,0 +1,26 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "shrink",
+      "targetTime": 0.5
+    },
+    {
+      "name": "sentence",
+      "targetTime": 1.9
+    },
+    {
+      "name": "generate",
+      "targetTime": 4.4499999999999975
+    },
+    {
+      "name": "standby",
+      "targetTime": 12.400000000000007
+    },
+    {
+      "name": "envelope",
+      "targetTime": 14.900000000000007
+    }
+  ],
+  "seed": 1811069866
+}

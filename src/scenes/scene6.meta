@@ -1,0 +1,50 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "sentence",
+      "targetTime": 0.3
+    },
+    {
+      "name": "layer-1",
+      "targetTime": 3.899999999999998
+    },
+    {
+      "name": "look-back",
+      "targetTime": 5.499999999999998
+    },
+    {
+      "name": "all-at-once",
+      "targetTime": 19.4
+    },
+    {
+      "name": "layer-2",
+      "targetTime": 21.499999999999996
+    },
+    {
+      "name": "predict-1",
+      "targetTime": 24.499999999999996
+    },
+    {
+      "name": "side-input",
+      "targetTime": 28.199999999999996
+    },
+    {
+      "name": "layer-1b",
+      "targetTime": 32.59999999999999
+    },
+    {
+      "name": "layer-2b",
+      "targetTime": 39.39999999999999
+    },
+    {
+      "name": "predict-2",
+      "targetTime": 41.99999999999999
+    },
+    {
+      "name": "compare",
+      "targetTime": 45.19999999999999
+    }
+  ],
+  "seed": 3166409226
+}

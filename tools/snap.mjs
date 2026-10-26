@@ -31,7 +31,11 @@ if (!video) {
   fs.mkdirSync(outDir, {recursive: true});
 }
 
-const server = await createServer({server: {port: 0}, logLevel: 'error'});
+// No file watching: editing sources mid-render must not reload the page.
+const server = await createServer({
+  server: {port: 0, watch: {ignored: ['**/*']}},
+  logLevel: 'error',
+});
 await server.listen();
 const {port} = server.httpServer.address();
 

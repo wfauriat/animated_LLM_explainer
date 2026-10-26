@@ -13,7 +13,6 @@ import {
   easeOutCubic,
   linear,
   sequence,
-  Vector2,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
@@ -26,29 +25,20 @@ import {
   faceFlickerOff,
   faceIdle,
   Server,
-  SERVER_H,
 } from '../components/Server';
 import {createRoom, typing} from '../components/UserRoom';
 import {
+  BATTERY_AT,
+  CAVITY_CENTER,
+  COVER_ASIDE,
+  COVER_ASIDE_SCALE,
+  DIVE_ZOOM,
   NETWORK_ZOOM,
   NETWORK_ZOOM_POS,
   ROOM_PANEL,
-  SERVER_CLOSE,
+  SERVER_BOTTOM,
 } from '../layout';
 import {colors} from '../theme';
-
-// Where the removed cover is laid, in server-local units (screen x = 580,
-// clear of the user screens on the server's right).
-const COVER_ASIDE = new Vector2((580 - SERVER_CLOSE.position.x) / SERVER_CLOSE.scale, COVER_Y);
-const COVER_ASIDE_SCALE = 1 / SERVER_CLOSE.scale;
-
-// Battery below the zoomed-in server.
-const SERVER_BOTTOM = SERVER_CLOSE.position.addY((SERVER_H / 2) * SERVER_CLOSE.scale);
-const BATTERY_AT = new Vector2(SERVER_CLOSE.position.x, 432);
-
-// Final dive: the cavity (on screen) is blown up until it fills the frame.
-const CAVITY_CENTER = SERVER_CLOSE.position.addY(COVER_Y * SERVER_CLOSE.scale);
-const DIVE_ZOOM = 6;
 
 function* unscrew(screw: Node) {
   yield* all(

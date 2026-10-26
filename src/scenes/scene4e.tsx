@@ -7,16 +7,14 @@ import {
   easeInCubic,
   easeOutCubic,
   linear,
-  Vector2,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
 import {createBattery} from '../components/Battery';
 import {colors} from '../theme';
-import {MASTER} from '../scene4/layout';
+import {MASTER, POWER_BATTERY} from '../scene4/layout';
 import {createMachine} from '../scene4/Machine';
 
-const BATTERY_AT = new Vector2(600, 425);
 const RUN = 6; // seconds of self-powered running
 
 export default makeScene2D(function* (view) {
@@ -26,7 +24,7 @@ export default makeScene2D(function* (view) {
   // Starts on 4d's last frame.
   const machine = createMachine('4e');
   const {core, output} = machine;
-  const battery = createBattery(clock, BATTERY_AT, MASTER.addX(40));
+  const battery = createBattery(clock, POWER_BATTERY, MASTER.addX(40));
   battery.node.y(800);
   view.add([machine.node, battery.cable, battery.flow, battery.node]);
 
@@ -45,7 +43,7 @@ export default makeScene2D(function* (view) {
   // --- Plug in the battery ------------------------------------------------
   yield* waitUntil('battery');
   yield* all(output.arrow.opacity(0, 0.6), output.arrowLabel.opacity(0, 0.6));
-  yield* battery.node.y(BATTERY_AT.y, 1.0, easeOutCubic);
+  yield* battery.node.y(POWER_BATTERY.y, 1.0, easeOutCubic);
   yield* battery.cable.end(1, 0.6);
   yield* battery.flow.opacity(1, 0.5);
 

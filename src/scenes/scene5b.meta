@@ -1,0 +1,26 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "zoom-out",
+      "targetTime": 0.4
+    },
+    {
+      "name": "split",
+      "targetTime": 2.6
+    },
+    {
+      "name": "deliver",
+      "targetTime": 5.4
+    },
+    {
+      "name": "reply",
+      "targetTime": 9
+    },
+    {
+      "name": "zoom-screen",
+      "targetTime": 10.4
+    }
+  ],
+  "seed": 1566972313
+}

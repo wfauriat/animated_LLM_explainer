@@ -56,7 +56,12 @@ function Arm({side, arm}: {side: 1 | -1; arm: Reference<Node>}) {
 }
 
 // `visible`: false = Scene 2 start state (no character, no cable yet).
-export function createRoom(clock: Clock, visible: boolean): Room {
+// `conversation` fills the chat on screen (default: the Scene 1 exchange).
+export function createRoom(
+  clock: Clock,
+  visible: boolean,
+  conversation: (chat: ChatRefs) => void = showConversation,
+): Room {
   const node = createRef<Node>();
   const character = createRef<Node>();
   const armL = createRef<Node>();
@@ -117,7 +122,7 @@ export function createRoom(clock: Clock, visible: boolean): Room {
     </Node>
   </Node>;
 
-  showConversation(chat);
+  conversation(chat);
 
   return {
     node: node(),

@@ -119,3 +119,6 @@ export const WORDS_X = 840;
 export const OUT_LABEL_Y = -300;
 export const N1_X = 925; // N+1 loop: down the right edge ...
 export const N1_Y = 505; // ... and back along the bottom
+
+// Battery plugged into the master gear (end of Scene 4, start of Scene 5).
+export const POWER_BATTERY = new Vector2(600, 425);

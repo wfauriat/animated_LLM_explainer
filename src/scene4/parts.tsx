@@ -35,7 +35,11 @@ import {
 export function makeChip(
   text: string,
   fill: string,
-  {width = CHIP_W, ...props}: {width?: number | null} & Omit<RectProps, 'width'> = {},
+  {
+    width = CHIP_W,
+    textFill = colors.tokenText,
+    ...props
+  }: {width?: number | null; textFill?: string} & Omit<RectProps, 'width'> = {},
 ) {
   return (
     <Rect
@@ -50,7 +54,7 @@ export function makeChip(
       lineWidth={0}
       {...props}
     >
-      <Txt fontFamily={font} fontSize={CHIP_FONT} fill={colors.tokenText} text={text} />
+      <Txt fontFamily={font} fontSize={CHIP_FONT} fill={textFill} text={text} />
     </Rect>
   ) as Rect;
 }

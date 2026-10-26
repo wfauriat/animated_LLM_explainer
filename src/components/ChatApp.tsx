@@ -225,11 +225,9 @@ export function* userSends(refs: ChatRefs, text: string) {
   yield* popIn(bubble);
 }
 
-// "…" typing indicator on the assistant side, shown for `duration` seconds.
-export function* botTyping(
-  refs: ChatRefs,
-  duration: number,
-): ThreadGenerator {
+// "…" typing indicator on the assistant side (hidden until popped);
+// `pulse()` animates the dots forever, run it in the background.
+export function makeTyping() {
   const dots = createRefArray<Circle>();
   const {row, bubble} = makeBubble(
     'bot',
@@ -239,18 +237,29 @@ export function* botTyping(
       ))}
     </Rect>,
   );
-  refs.messages().add(row);
-  yield* popIn(bubble);
-  const pulse = yield loop(() =>
-    sequence(
-      0.15,
-      ...dots.map(d => chain(d.opacity(1, 0.25), d.opacity(0.35, 0.25))),
-    ),
-  );
+  const pulse = () =>
+    loop(() =>
+      sequence(
+        0.15,
+        ...dots.map(d => chain(d.opacity(1, 0.25), d.opacity(0.35, 0.25))),
+      ),
+    );
+  return {row, bubble, pulse};
+}
+
+// Typing indicator shown for `duration` seconds.
+export function* botTyping(
+  refs: ChatRefs,
+  duration: number,
+): ThreadGenerator {
+  const typing = makeTyping();
+  refs.messages().add(typing.row);
+  yield* popIn(typing.bubble);
+  const pulse = yield typing.pulse();
   yield* waitFor(duration);
   cancel(pulse);
-  yield* popOut(bubble);
-  row.remove();
+  yield* popOut(typing.bubble);
+  typing.row.remove();
 }
 
 export function* botReplies(

@@ -1,6 +1,8 @@
-# Session log — 2026-10-25
+# Session log — 2026-10-25 / 2026-10-26
 
-Animated LLM explainer, built with Motion Canvas. This covers setting up the tools and the first drafts of Scenes 1–3.
+Animated LLM explainer, built with Motion Canvas.
+- **Day 1** (sections 1–8): setting up the tools and the first drafts of Scenes 1–3.
+- **Day 2** (sections 9–16): Scenes 4 to 6.
 
 ---
 
@@ -123,21 +125,160 @@ Code is split into shared pieces so that each scene starts on exactly the previo
 
 ---
 
-## Current state
+# Day 2 — 2026-10-26
 
-- **Commands**
+## 9. Scene 4 brief and decisions
+
+The user committed Scenes 1–3 and added Scene 4 directions to `scene_timeline_v0.md`, with a layout sketch (`scratch/scene4_lay1.svg`) and a cog and a crank drawn in Python (`scratch/wheel.py`, `scratch/handle.py`). I rendered the SVG with Inkscape to read it.
+
+User decisions:
+- **Colours:** adapt the SVG's colours to the dark theme. Input tokens are blue (the user's colour), the generated token is green (the assistant's colour), indices are cyan, the dictionary is amber and embedding/un-embedding are lavender.
+- **Camera:** no zoom in and out for the core. Each stage is presented centred, then folds to the left.
+- **Depth:** 4 dimensions in depth, plus "⋰".
+- **Rows:** 4 core rows (It, was, ⋮, took, a); 10 would be too crowded.
+- **Dictionary:** no special tokens (`<sep>`, `<cls>`).
+- **Attention hint:** yes, as cogs meshing vertically between rows.
+- **Picking "coat" (21%) over "hat" (32%):** deliberate. Show it as **Generative** sampling, with a roulette, and put the word "Generative" on screen.
+- **Labels:** keep them for each stage.
+- **Structure:** sub-scenes, in order.
+
+## 10. Scene 4: the machine, in 5 sub-scenes
+
+| Sub-scene | Content | Voice-over markers |
+|---|---|---|
+| 4a Tokenization (about 25 s) | The sentence bubble splits into token chips ("rain\|ing", "out\|side") plus a dashed "?" slot. The dictionary's list scrolls to each token's reading band and its index flies out. The stage then folds to the left, and the dictionary becomes a thin spine. | `split`, `column`, `lookup`, `fold` |
+| 4b Embedding (about 17 s) | Close-up: 6290 ("rain") goes into the Embedding block and comes out as 4 dials stacked in depth, which spin to their directions. The block folds into a spine. The 4 rows get dial stacks at the core entrance. | `embedding`, `close-up`, `fold`, `rows` |
+| 4c Transformer layers (about 19 s) | 4 depth planes; columns of cogs that mesh with the dials above and below them, so each layer is one gear train linking all rows. The isometric crank (port of `handle.py`, re-projected every frame) turns once per layer: 3 layers, a fast-forward through "⋯", then layer N. | `core`, `crank`, `layer-1`, `layer-2`, `layer-3`, `more-layers`, `layer-n` |
+| 4d Output (about 20 s) | The last row becomes the Top-5 (indices with % and bars), then Un-embedding turns them into words. A "Generative" roulette lands on "coat". The N+1 arrow carries "coat" into the "?" slot. | `last-row`, `top5`, `unembed`, `generative`, `spin`, `pick`, `n+1` |
+| 4e Power (about 9 s) | The crank drops. The Scene 3 battery plugs into the master gear, and the machine runs on its own while the battery drains. | `drop-crank`, `battery`, `powered` |
+
+**Changes to Scene 3:**
+- The placeholder modules inside the server are replaced by meshed cogs turning.
+- A new `dive` marker zooms into the cavity, so Scene 4 starts on the same dark colour.
+
+**New code:**
+- `src/components/Cog.tsx`: port of `wheel.py`.
+- `src/scene4/`:
+  - `layout.ts`: data and positions
+  - `parts.tsx`: chips, labels, dictionary, folded input
+  - `Compass.tsx`: dials
+  - `Crank.tsx`
+  - `Core.tsx`
+  - `Output.tsx`: Top-5, un-embedding, roulette, N+1
+  - `Machine.tsx`: rebuilds the machine at the state each sub-scene starts from
+
+**Readability fixes after checking frames:**
+- **Stage labels:** "Tokenization Embedding" read as one phrase, so Embedding became a vertical label on its spine.
+- **Dials:**
+  - The back dials were translucent, so they're now darkened with a brightness filter instead.
+  - The arrows were lengthened.
+  - The "⋰" dots no longer hide behind the back dial.
+- **Core** (it was too cluttered at first):
+  - bigger dials and smaller, darker cogs;
+  - cogs on the back planes fade progressively;
+  - the planes moved clear of the Embedding spine;
+  - the "⋯" moved to the bottom row, and the rows' "⋮" fades as the rows enter the core.
+- **Output:** the winning slice is brought to the front so its highlight shows, and the battery moved up off the bottom edge.
+
+## 11. Scenes 5 and 6: brief and decisions
+
+User decisions:
+1. **Scene 5 bubble:** blue prompt tokens plus green generated tokens, in one bubble.
+2. **Tokenization:** "umbrella" becomes "umb|rella".
+3. **Request vs response:** the response trip only.
+4. **Final screen:** the user's prompt, then the assistant's completion.
+5. **Wording:** "He put money in the bank" (past tense).
+6. **The cue for "bank":** it attends mostly to "river".
+7. **Scene 6 layout:** one machine. The first sentence is run and attention is explained fully. Then the same machine runs a **side input** to the left of the input, with a **side output** to the right of the output.
+8. **Scene 6 layers:** keep it light (1 layer for the rule, 2 for the comparison).
+
+## 12. Scene 5: generation and response
+
+| Sub-scene | Content | Voice-over markers |
+|---|---|---|
+| 5a Generation (about 17 s) | The Scene 4 machine shrinks to the bottom. A bubble at the top grows token by token: "coat and an umb rella and walked to school at a rapid pace . `<end>`". Each token is one pass of the machine (the columns glow, the cogs advance) and the chip flies up into the bubble. At `<end>` the machine goes to standby (pulsing amber light, low energy flow), and the bubble folds into a green envelope. | `shrink`, `sentence`, `generate`, `standby`, `envelope` |
+| 5b Response (about 15 s) | Scene 3's dive in reverse: out of the cabinet, back to the Scene 2 split screen. The envelope rides the user's wire, comes out of the wall socket and follows the cable into the computer. The typing indicator gives way to the completion bubble, and the camera ends on Scene 1's exact opening framing of the screen. | `zoom-out`, `split`, `deliver`, `reply`, `zoom-screen` |
+
+**Refactors:**
+- `makeTyping()` in `ChatApp.tsx` (typing indicator plus a background pulse).
+- `createRoom()` takes a custom conversation.
+- `makeChip()` takes a text colour.
+- Scene 3's dive, cover and battery constants moved to `src/layout.ts`.
+- The Scene 4 battery position became `POWER_BATTERY`.
+- Shared content is in `src/scene5/parts.tsx`.
+
+## 13. Scene 6: attention (one scene, about 49 s)
+
+- **Mechanism:** the input tokens only, an Embedding spine, front dials only (plus "⋰"), and 2 layer columns of cogs. When a row is processed, **magenta links arch back from the earlier words** into its dial. Their thickness, brightness and flow dots show the weight. The dial's arrow is then nudged. Links never point forward.
+- **Phase 1:** "He sat on the river bank".
+  1. Rows 1 to 5 are processed one by one in layer 1, building the triangle; for "bank", the "river" link is the thickest.
+  2. The whole triangle flashes at once ("in reality all at the same time").
+  3. Layer 2 runs all rows at once.
+  4. N+1 "to", then N+2 "fish".
+- **Phase 2:** the side input "He put money in the bank" appears on the left and the first sentence dims.
+  1. The rows go back to the entrance with the new dials. "bank" starts identical (same token) and gets a pulse.
+  2. Layer 1: the other rows at once, then "bank" in detail, with "money" the thickest link.
+  3. Layer 2 runs.
+  4. The side output on the right shows "each", then "month".
+- **Ending:** copies of the two final "bank" dials, captioned "bank (river)" and "bank (money)", sit side by side above the outputs, pointing in different directions.
+- **Markers:** `sentence`, `layer-1`, `look-back`, `all-at-once`, `layer-2`, `predict-1`, `side-input`, `layer-1b`, `layer-2b`, `predict-2`, `compare`.
+- **Fixes after checking frames:**
+  - The whole stage is enlarged 1.12× to fill the frame.
+  - The output columns are wider apart, so the captions no longer overlap.
+  - The second prediction arrow dips under the first column.
+  - The flow dots are weighted like their links.
+
+## 14. Tools
+
+- **Problem:** a full render failed with "Execution context was destroyed". Source edits during the render made Vite's file watcher reload the page.
+  - **Fix:** the render server in `tools/snap.mjs` no longer watches files (`server.watch.ignored: ['**/*']`), so editing while rendering is now safe.
+- `output/project.mp4` on disk is a **broken partial** (120 s) from that failed render. It needs a re-render (see the end of this log).
+
+## 15. Current state
+
+- **Scenes** (in `src/project.ts`): `scene1`, `scene2`, `scene3`, `scene4a`–`scene4e`, `scene5a`, `scene5b`, `scene6`.
+- **Total length:** about 251 s (4 min 11 s).
+- **Default fps:** 60 (Motion Canvas default). It can be changed to 30.
+- **Commands:**
   - `npm start`: open the editor
   - `npm run snap [-- t1 t2 …]`: save still frames and a contact sheet
-  - `npm run video`: render the full MP4, about 5 min
-- **Scene list:** `src/project.ts` lists `scene1`, `scene2` and `scene3`.
-- **Default fps:** 60 (Motion Canvas default). It can be changed to 30.
+  - `npm run video`: render the full MP4
+- **Verification:** every scene was checked with stills and contact sheets. The full video has not been rendered since Scene 4c (the user will render it).
 
-## Open items and questions for the next round
+## 16. Open items and questions for the next round
 
-- **Split screen:** slanted divider (current), or separate rectangular panels?
-- **Battery timing:** it currently appears last in Scene 3. The storyboard suggests it's there throughout, so it could appear right after the zoom.
-- **Other users' screens around the server:** keep or remove?
-- **Character:** a basic silhouette for now; it could be refined, or replaced with an SVG you provide.
-- **Pacing:** overall pacing, and how much the bubbles bounce when they pop in.
-- **Scene cuts:** the flowing dots jump slightly at each cut, because each scene restarts its own clock.
-- **Scene 4:** waiting for your visual. The inside of the server (stacked modules, blue in and green out) is ready to be zoomed into.
+Carried over from day 1:
+- Slanted divider vs separate panels.
+- When the battery appears in Scene 3.
+- Keep the other users' screens or not.
+- Refine the character.
+- Overall pacing and how bouncy the pop-ins are.
+- Small jumps in the flowing dots at scene cuts.
+
+New:
+- **Scene 4:**
+  - The arrow nudges are made up.
+  - The dial rims' teeth only roughly mesh with the cogs.
+  - The 3 other rows stay visible in layer N while "a" exits.
+  - The roulette briefly covers the machine.
+- **Scene 5:**
+  - Is the prompt-plus-completion exchange on the final screen clear enough?
+  - Scene 5b cuts from Scene 1's screen framing straight to Scene 6's dark machine. A fade could be added.
+- **Scene 6:**
+  - The weights and nudges are illustrative.
+  - Only front dials are shown (one dimension plus "⋰"), to keep it light.
+  - The side input is placed left of the main input, as requested, so it reads right to left.
+
+---
+
+## How to render the full video
+
+Close any `npm start` editor tab first (not required, but it frees the CPU). Then, from the project folder:
+
+```bash
+npm run video
+```
+
+This writes `output/project.mp4` (1920×1080, 60 fps, about 4 min 11 s). At the current length it takes roughly 15–20 minutes.
+
+Alternatively, run `npm start`, open http://localhost:9000, go to Video Settings → Rendering, choose **Video (FFmpeg)** as the exporter, and click **Render**.

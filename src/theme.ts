@@ -71,6 +71,7 @@ export const colors = {
   steelDark: '#2b3240',
   dialFace: '#eef1f6',
   label: '#9aa3b2',
+  attention: '#e58cf2', // Scene 6: links from earlier words
 };
 
 export const font = 'Inter';
