@@ -1,0 +1,22 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "split",
+      "targetTime": 2.4
+    },
+    {
+      "name": "column",
+      "targetTime": 5.7
+    },
+    {
+      "name": "lookup",
+      "targetTime": 8.600000000000001
+    },
+    {
+      "name": "fold",
+      "targetTime": 23.179999999999982
+    }
+  ],
+  "seed": 2800402491
+}

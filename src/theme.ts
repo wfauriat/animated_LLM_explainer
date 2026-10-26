@@ -49,9 +49,7 @@ export const colors = {
   cabinetEdge: '#3e4452',
   cover: '#15181f',
   coverEdge: '#3a404d',
-  cavity: '#07090d',
-  module: '#151c28',
-  moduleEdge: '#2b3a52',
+  cavity: '#0b0e14', // same as machineBg: Scene 3 dives into it
   ledOn: '#8dffa6',
   ledOff: '#1a2e21',
   halo: '#3ddc6a',
@@ -60,6 +58,19 @@ export const colors = {
   pcb: '#1d4a33',
   pcbEdge: '#2e6b4b',
   battery: '#d6dbe4',
+
+  // Scene 4: inside the machine
+  machineBg: '#0b0e14',
+  token: '#cfe5ff', // input tokens = user's bubble color
+  tokenText: '#16202b',
+  index: '#8fd8e8',
+  dictionary: '#e9d9a6',
+  dictionaryText: '#2a2416',
+  embedding: '#c4b0f0',
+  steel: '#8a94a6',
+  steelDark: '#2b3240',
+  dialFace: '#eef1f6',
+  label: '#9aa3b2',
 };
 
 export const font = 'Inter';

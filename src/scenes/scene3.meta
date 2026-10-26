@@ -20,6 +20,10 @@
     {
       "name": "battery",
       "targetTime": 14.77
+    },
+    {
+      "name": "dive",
+      "targetTime": 20.87
     }
   ],
   "seed": 2900565317

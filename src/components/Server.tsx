@@ -3,7 +3,6 @@
 // wires, and reveals the (still unlabelled) layers inside.
 import {
   Circle,
-  CubicBezier,
   Gradient,
   Line,
   Node,
@@ -21,7 +20,8 @@ import {
   Vector2,
   waitFor,
 } from '@motion-canvas/core';
-import {Clock, Curve, FlowDots} from './Flow';
+import {Cog} from './Cog';
+import {Clock} from './Flow';
 import {colors} from '../theme';
 
 export const SERVER_W = 400;
@@ -209,63 +209,27 @@ function CoverBack() {
 }
 
 // ---------------------------------------------------------------------------
-// Interior: placeholder stack of modules with data rising from blue to green.
+// Interior: a glimpse of the machinery explored in Scene 4 (meshed cogs).
 
-const MODULES = 6;
-const BUS_X = -135;
+const INTERIOR_COLS = [-85, 0, 85];
+const INTERIOR_ROWS = [-190, -95, 0, 95, 190];
 
 function Interior({clock}: {clock: Clock}) {
-  const bus: Curve = {
-    p0: [BUS_X, 240],
-    p1: [BUS_X, 80],
-    p2: [BUS_X, -80],
-    p3: [BUS_X, -240],
-  };
-  const gradient = new Gradient({
-    type: 'linear',
-    from: [0, 240],
-    to: [0, -240],
-    stops: [
-      {offset: 0, color: colors.flowIn},
-      {offset: 1, color: colors.flowOut},
-    ],
-  });
-  // A wave of activity sweeping up through the modules.
-  const activity = (i: number) => () => {
-    const wave = (clock() * 0.8) % 1.4;
-    return Math.max(0, 1 - Math.abs(wave - i / (MODULES - 1)) * 4);
-  };
+  // Neighbours in a row turn in opposite directions; with 9 teeth a tooth of
+  // one cog faces a gap of the next at rotation 0, so they stay meshed.
   return (
     <Node>
-      <CubicBezier {...bus} stroke={colors.moduleEdge} lineWidth={6} />
-      {range(MODULES).map(i => {
-        const y = 190 - i * 80;
-        return (
-          <Node>
-            <Line points={[[BUS_X, y], [-85, y]]} stroke={colors.moduleEdge} lineWidth={4} />
-            <Rect
-              x={25}
-              y={y}
-              width={220}
-              height={52}
-              radius={8}
-              fill={colors.module}
-              stroke={colors.moduleEdge}
-              lineWidth={3}
-            >
-              {range(7).map(j => (
-                <Circle
-                  x={-78 + j * 26}
-                  size={9}
-                  fill={j % 3 ? colors.flowIn : colors.flowOut}
-                  opacity={() => 0.2 + 0.8 * activity(i)()}
-                />
-              ))}
-            </Rect>
-          </Node>
-        );
-      })}
-      <FlowDots curve={bus} clock={clock} color={'#ffffff'} spacing={40} speed={70} width={9} stroke={gradient} shadowColor={colors.flowIn} />
+      {INTERIOR_ROWS.flatMap((y, r) =>
+        INTERIOR_COLS.map((x, c) => (
+          <Cog
+            x={x}
+            y={y}
+            radius={46}
+            opacity={0.85}
+            rotation={() => (c % 2 ? -1 : 1) * (clock() * 30 + r * 7)}
+          />
+        )),
+      )}
     </Node>
   );
 }
@@ -288,6 +252,7 @@ export interface Server {
   coverFlip: Node;
   coverFront: Rect;
   coverBack: Rect;
+  interior: Node;
 }
 
 export function createServer(clock: Clock): Server {
@@ -297,6 +262,7 @@ export function createServer(clock: Clock): Server {
   const coverFlip = createRef<Node>();
   const coverFront = createRef<Rect>();
   const coverBack = createRef<Rect>();
+  const interior = createRef<Node>();
   const face = createLedFace();
 
   const halo = new Gradient({
@@ -351,7 +317,9 @@ export function createServer(clock: Clock): Server {
       <Rect x={100 + i * 22} y={-282} width={8} height={30} radius={4} fill={colors.cabinetEdge} />
     ))}
     <Rect y={COVER_Y} width={COVER_W} height={COVER_H} radius={12} fill={colors.cavity}>
-      <Interior clock={clock} />
+      <Node ref={interior}>
+        <Interior clock={clock} />
+      </Node>
     </Rect>
     <Node ref={coverMover} y={COVER_Y}>
       <Node ref={coverFlip}>
@@ -380,5 +348,6 @@ export function createServer(clock: Clock): Server {
     coverFlip: coverFlip(),
     coverFront: coverFront(),
     coverBack: coverBack(),
+    interior: interior(),
   };
 }

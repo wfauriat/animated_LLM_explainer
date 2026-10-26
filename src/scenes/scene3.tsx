@@ -6,6 +6,7 @@ import {
   all,
   cancel,
   chain,
+  createRef,
   createSignal,
   easeInCubic,
   easeInOutCubic,
@@ -45,6 +46,10 @@ const COVER_ASIDE_SCALE = 1 / SERVER_CLOSE.scale;
 const SERVER_BOTTOM = SERVER_CLOSE.position.addY((SERVER_H / 2) * SERVER_CLOSE.scale);
 const BATTERY_AT = new Vector2(SERVER_CLOSE.position.x, 432);
 
+// Final dive: the cavity (on screen) is blown up until it fills the frame.
+const CAVITY_CENTER = SERVER_CLOSE.position.addY(COVER_Y * SERVER_CLOSE.scale);
+const DIVE_ZOOM = 6;
+
 function* unscrew(screw: Node) {
   yield* all(
     screw.rotation(-720, 1.0, easeInOutCubic),
@@ -75,7 +80,12 @@ export default makeScene2D(function* (view) {
   const server = net.server;
   const battery = createBattery(clock, BATTERY_AT, SERVER_BOTTOM);
   battery.node.y(800);
-  view.add([room.node, net.node, battery.cable, battery.flow, battery.node]);
+  const camera = createRef<Node>();
+  view.add(
+    <Node ref={camera}>
+      {[room.node, net.node, battery.cable, battery.flow, battery.node]}
+    </Node>,
+  );
 
   yield clock(1000, 1000, linear);
   yield blinkCaret(room.chat);
@@ -121,5 +131,13 @@ export default makeScene2D(function* (view) {
   yield* battery.node.y(BATTERY_AT.y, 1.0, easeOutCubic);
   yield* battery.cable.end(1, 0.6);
   yield* battery.flow.opacity(1, 0.5);
-  yield* waitFor(5);
+  yield* waitFor(4);
+
+  // Dive into the open cabinet: Scene 4 starts inside, on the cavity color.
+  yield* waitUntil('dive');
+  yield* all(
+    camera().scale(DIVE_ZOOM, 2.2, easeInCubic),
+    camera().position(CAVITY_CENTER.scale(-DIVE_ZOOM), 2.2, easeInCubic),
+    server.interior.opacity(0, 1.8, easeInCubic),
+  );
 });

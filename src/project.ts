@@ -6,6 +6,11 @@ import '@fontsource/inter/600.css';
 import scene1 from './scenes/scene1?scene';
 import scene2 from './scenes/scene2?scene';
 import scene3 from './scenes/scene3?scene';
+import scene4a from './scenes/scene4a?scene';
+import scene4b from './scenes/scene4b?scene';
+import scene4c from './scenes/scene4c?scene';
+import scene4d from './scenes/scene4d?scene';
+import scene4e from './scenes/scene4e?scene';
 
 // Make sure the font is ready before any text gets measured.
 await Promise.all(
@@ -15,5 +20,5 @@ await Promise.all(
 );
 
 export default makeProject({
-  scenes: [scene1, scene2, scene3],
+  scenes: [scene1, scene2, scene3, scene4a, scene4b, scene4c, scene4d, scene4e],
 });

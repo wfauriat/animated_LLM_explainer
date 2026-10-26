@@ -1,6 +1,12 @@
 // Upright battery feeding the server through a short power cable.
 import {Line, Node, Rect} from '@motion-canvas/2d';
-import {createRef, range, Vector2} from '@motion-canvas/core';
+import {
+  createRef,
+  createSignal,
+  range,
+  SimpleSignal,
+  Vector2,
+} from '@motion-canvas/core';
 import {Clock, Curve, FlowDots} from './Flow';
 import {colors} from '../theme';
 
@@ -11,6 +17,7 @@ export interface Battery {
   node: Node; // battery body, slides in
   cable: Line;
   flow: Node;
+  level: SimpleSignal<number, void>; // charge, in bars (0-4)
 }
 
 // `at`: battery center; `to`: where the cable plugs into the machine.
@@ -18,6 +25,7 @@ export function createBattery(clock: Clock, at: Vector2, to: Vector2): Battery {
   const node = createRef<Node>();
   const cable = createRef<Line>();
   const flow = createRef<Node>();
+  const level = createSignal(4);
   const top = at.addY(-BODY_H / 2 - 14);
   const path: Curve = {
     p0: top,
@@ -36,7 +44,10 @@ export function createBattery(clock: Clock, at: Vector2, to: Vector2): Battery {
           height={28}
           radius={4}
           fill={colors.energy}
-          opacity={() => 0.55 + 0.45 * Math.max(0, Math.sin(clock() * 3 - i * 0.8))}
+          opacity={() =>
+            Math.min(1, Math.max(0.12, level() - i)) *
+            (0.55 + 0.45 * Math.max(0, Math.sin(clock() * 3 - i * 0.8)))
+          }
         />
       ))}
       <Line
@@ -59,5 +70,6 @@ export function createBattery(clock: Clock, at: Vector2, to: Vector2): Battery {
         <FlowDots curve={path} clock={clock} color={colors.energy} spacing={34} speed={60} width={12} />
       </Node>
     ) as Node,
+    level,
   };
 }

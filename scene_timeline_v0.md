@@ -64,7 +64,90 @@ machine.
 
 -- Sequence / Scene 4
 
-To be completed (I will provide a visual)
+This is a central piece of the animation, so it is quite dense.
+The idea is to explain with a visualization that is as simple as possible,
+the "inner workings" of modern LLM. So it does not tries to be perfectly accurate.
+Still it wants to convey the following ideas / imaging / perception.
+The language model is at core a "MACHINE", illustrated by sequential transformations
+often made explicit though turning cogs / gears / wheels.
+The different layers and transformation are unveilled sequentially from the left 
+to the right. You have a scratch illustration I made in scene4_lay1.svg (let me know
+me if you prefer a bitmap rather than a vector for analysis). In the illustration
+I provided, most if not all of the material is present, but in the animation,
+it has to be unveilled progressively, otherwise it will be too dense on the
+audiance. One idea could be to center each next layer as it unveils, and then
+compress it back and stack it horizontally to the previous layers. So that focus
+has enough room to breath, and once it has been shown, it moves to the lefts and
+folds (but this is not necessarily a strict solution to adhere to, you have
+some liberty to iterate). Let us describre the different layers sequentially.
+First, a sentence in tokens appears : "it was rain ing out side so he took a ??".
+The sequence is converted in token indexes (numbers have been selected so be plausible,
+even if not corresponding to a rigorous BPE tokenization or another proper
+tokenization). The each token index corresponds to a particular embedding.
+The idea of embedding is represented by oriented coordinates (looking like a 
+compass), only 3 dimension are represented and they are stacked on the "depth"
+dimension (perpendicular to screen) with ellipsis (meaning that dimension is higher).
+Then, the core of the machinery, is the transformer layers (so far, we will not
+mention "attention", it will come later in the animation). Rather than products
+of numbers, to convey the idea of a sequence of "mechanical" operations (in reality
+algebra), transformers are made of many cogs / gears, which will "nudge" the 
+compasses (coordinates, representing kind of like a residual stream). The idea is to
+represent the compasses going through a first layers of cogs, getting nudged, 
+the first layer of cogs turns,
+then a second, then a third, and so on. The perspective is made (only three dimensions),
+so that those operation runs on all component of the embedded vector.
+At the last layer, the top 5 most likely token index (the softmax) are displyed,
+and then unembedding gives back the actual token. Another idea to convey the idea
+of the "machine", is that with each movement through the layers (when flowing
+the compasses through the transformer core), a crank handle is turned, which represent
+the mechanical operation. Once a next token has been picked, it is appended to
+the input window. Lastly on the scene, the crank handle is droped, a battery is
+pluged (this is how the server operates), and cogs turns a bit, drawing power 
+from the battery (to show that running the LLM predictor requires power, later
+the discusion on electrical operation on GPUs will be discussed more precisely, 
+here the idea is just to "power" a "machine", which "draws power").
+The svg you work with does not have to be exactly followed, do whatever you feel
+carries best the messages while getting inspired from my input.
 
-Let us attempt to produce the first scene before going to far, and adjusting what
-seems to need adjusting (effort level in design, types of actions, ...)
+
+-- Sequence / Scene 5
+
+At the top of the screen, a text box (of the same kind of scene 1, assistant
+color), a longer sentence is generated one token at the time : "It was raining
+outside so he took a coat and an umbrella and walked to school at a rapid pace
+< end >". While the token appear, a rotating cog is visible and rotates at 
+each new appearing token (fast enough so that we don't spend too much time on
+scene). Once the sentence is complete, it is folded into a small enveloppe 
+(representing a HTTP package, let us not go into streaming) than is then sent
+a moves into the wall plug, with the flow of information. On a split screen, 
+the enveloppe gets out of another wall plug, at the client's house, the same
+caracter (from scene 2) is view and the information reaches its screen and its
+computer, and is displayed on screen. [The idea is to illustrate the request /
+prompt, response cycle, and that the core of the LLM is hosted in remote
+premises (at model's vendor), and that the response is sent back to the user
+terminal]. [Another idea is that once the auto-regressive token production
+reaches the "end" reason, the machinery "stops" or rather moves into 
+stand-by / listening, until further sollicitation].
+
+
+-- Sequence / Scene 6
+
+We come back to the transformer core, with turning cogs. Here only the tokens
+appear, not their index or the dictionary lookup.
+A new sequence is used as a example, actually two sequences.
+"He sat on the river bank" and "He puts money at the bank".
+[The idea here is to illustrate the concept of "attention", in the decoder
+architecture]. 
+The idea is to show that the new tokens attend to the previous token, sat attends
+to he, on attends to sat and he, and so on. So when the dials are presented to the 
+first layer, they are impacted by the top layer cogs and by the cogs on their 
+own row. (so far I am not exactly sure how to "exactly" sequence these action
+and lay out the cogs and interaction, make me proposals).
+Maybe it is too much to repeat on each row. Maybe it is better to highligh bank, 
+(in a second phase), in both sentences, and show it attends to "sat" (so it
+gives bank the sense of a river bank), and in the other situation to "money", so
+bank in the money deposit sense. The idea is to show that context flows though 
+the machine, and that latter dials are "nudge" by "influences" above.
+On the right side of the transformer core, two alternative predictions are displayed
+at the end : N+1 is "to" N+2 is "fish" (in one alternative), N+1 is "each" N+2 is
+"month" (for the second alternative).
