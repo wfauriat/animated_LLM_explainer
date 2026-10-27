@@ -5,8 +5,10 @@
 // the servers that train it. The machine predicts (wrong answers in red,
 // right ones in green), a correction signal reaches the cogs and their
 // notches turn; twice. Fewer predictions are wrong each time: 6, 4, then 1
-// of 9.
-import {Circle, CubicBezier, Line, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
+// of 9. The screen then dims: this is "Pre-Training" (the P in GPT), and
+// what gets tuned is the stack of transformer layers (the T) and the
+// embedding table, in proportions compared for GPT-2 small and GPT-3.
+import {Circle, CubicBezier, Line, makeScene2D, Node, Rect, RectProps, Txt} from '@motion-canvas/2d';
 import {
   all,
   chain,
@@ -73,6 +75,32 @@ const SIGNAL_FROM = new Vector2(-20, 150);
 const SIGNAL_ANGLE = 17;
 // Which way each notch is pulled (scaled by the number of wrong predictions).
 const PULL = [1, 1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1];
+
+// What gets tuned: share of the parameters (attention, feed-forward networks,
+// embedding table). Within a layer, attention is ~1/3 (4·d²) and the
+// feed-forward network ~2/3 (8·d²). GPT-2 small: layers 85.1 M, embeddings
+// (tokens + positions) 39.4 M of 124.4 M. GPT-3: layers 174.0 B, embeddings
+// 0.64 B of 175 B.
+const SHARES = [
+  {model: 'GPT-2 small (124 M)', y: 120, parts: [0.228, 0.455, 0.316], layers: '68%', embedding: '32%'},
+  {model: 'GPT-3 (175 B)', y: 220, parts: [0.332, 0.664, 0.004], layers: '99.6%', embedding: '0.4%'},
+];
+const PART_COLORS = [colors.attention, colors.index, colors.embedding];
+const BAR_X = -260;
+const BAR_W = 1000;
+const BAR_H = 60;
+const LEGEND_X = -700;
+
+// A line of words, some highlighted.
+function Words({parts, gap = 12, ...props}: {parts: [string, string?, number?][]; gap?: number} & RectProps) {
+  return (
+    <Rect layout alignItems={'baseline'} gap={gap} {...props}>
+      {parts.map(([text, fill = colors.textLight, weight = 500]) => (
+        <Txt fontFamily={font} fontSize={props.fontSize ?? 36} fontWeight={weight} fill={fill} text={text} />
+      ))}
+    </Rect>
+  );
+}
 
 // A little of everything, in English: topics and syntaxes vary.
 const SENTENCES = [
@@ -279,6 +307,14 @@ export default makeScene2D(function* (view) {
   const cornerGroup = createRef<Node>();
   const traces = createRef<Node>();
   const brackets = GROUPS.map(() => createRef<Line>());
+  const veil = createRef<Rect>();
+  const pretraining = [createRef<Rect>(), createRef<Rect>()];
+  const tunedTitle = createRef<Txt>();
+  const legend = [createRef<Node>(), createRef<Node>(), createRef<Node>()];
+  const bars = SHARES.map(() => ({node: createRef<Node>(), grow: createSignal(0), labels: createRef<Node>()}));
+  const note = createRef<Txt>();
+  const amber = colors.energy;
+  const swatch = (fill: string) => <Rect width={28} height={28} radius={5} fill={fill} />;
   const links = GROUPS.map(() => createRef<CubicBezier>());
   const waves = createRef<Node>();
 
@@ -291,7 +327,7 @@ export default makeScene2D(function* (view) {
   view.add(
     <>
       <Node>
-        <Txt ref={header} y={HEADER_Y} fontFamily={font} fontSize={44} fontWeight={600} fill={colors.textLight} text={'Self-supervised learning: on gigantic amounts of texts / contexts'} opacity={0} />
+        <Txt ref={header} y={HEADER_Y} fontFamily={font} fontSize={44} fontWeight={600} fill={colors.textLight} text={'"Self-supervised" learning: on gigantic amounts of texts / contexts'} opacity={0} />
         <Txt ref={sourcesTitle} x={SECTION_X} y={SOURCES_TITLE_Y} {...heading} text={'Sources'} opacity={0} />
         {sources}
       </Node>
@@ -343,6 +379,59 @@ export default makeScene2D(function* (view) {
       <Rect clip y={(BURST_TOP + 540) / 2} width={1920} height={540 - BURST_TOP}>
         <Node ref={burst} y={-(BURST_TOP + 540) / 2} />
       </Rect>
+
+      {/* The closing: Pre-Training, and what gets tuned */}
+      <Rect ref={veil} width={1920} height={1080} fill={colors.machineBg} opacity={0} />
+      <Words ref={pretraining[0]} y={-410} fontSize={58} gap={18} opacity={0} parts={[['This process is'], ['“Pre-Training”', amber, 700]]} />
+      <Words ref={pretraining[1]} y={-335} fontSize={36} gap={10} opacity={0} parts={[['(the', colors.textMuted], ['P', amber, 700], ['in GPT)', colors.textMuted]]} />
+      <Txt ref={tunedTitle} x={LEGEND_X} offsetX={-1} y={-215} fontFamily={font} fontSize={42} fontWeight={600} fill={colors.textLight} text={'What gets “tuned”:'} opacity={0} />
+      <Node ref={legend[0]} opacity={0}>
+        <Words x={LEGEND_X + 40} offsetX={-1} y={-145} fontSize={36} gap={10} parts={[['the stack of transformer layers'], ['(the', colors.textMuted], ['T', amber, 700], ['in GPT)', colors.textMuted]]} />
+      </Node>
+      <Node ref={legend[1]} opacity={0}>
+        <Rect layout alignItems={'center'} gap={14} x={LEGEND_X + 80} offsetX={-1} y={-85}>
+          {swatch(colors.attention)}
+          <Txt fontFamily={font} fontSize={32} fill={colors.textLight} text={'attention heads'} />
+          <Txt fontFamily={font} fontSize={32} fill={colors.textMuted} text={'+'} marginLeft={6} marginRight={6} />
+          {swatch(colors.index)}
+          <Txt fontFamily={font} fontSize={32} fill={colors.textLight} text={'feed-forward networks'} />
+        </Rect>
+      </Node>
+      <Node ref={legend[2]} opacity={0}>
+        <Rect layout alignItems={'center'} gap={14} x={LEGEND_X + 40} offsetX={-1} y={-15}>
+          <Txt fontFamily={font} fontSize={36} fill={colors.textMuted} text={'+'} marginRight={4} />
+          {swatch(colors.embedding)}
+          <Txt fontFamily={font} fontSize={36} fill={colors.textLight} text={'the embedding table'} />
+        </Rect>
+      </Node>
+      {SHARES.map((b, i) => {
+        const cum = (j: number) => b.parts.slice(0, j).reduce((a, x) => a + x, 0);
+        const grow = bars[i].grow;
+        return (
+          <Node ref={bars[i].node} opacity={0}>
+            <Txt x={BAR_X - 24} offsetX={1} y={b.y} fontFamily={font} fontSize={32} fontWeight={600} fill={colors.textLight} text={b.model} />
+            {b.parts.map((f, j) => (
+              <Rect
+                x={() => BAR_X + BAR_W * cum(j) * grow()}
+                offsetX={-1}
+                y={b.y}
+                width={() => Math.max(5, BAR_W * f) * grow()}
+                height={BAR_H}
+                fill={PART_COLORS[j]}
+              />
+            ))}
+            <Node ref={bars[i].labels} opacity={0}>
+              <Txt x={BAR_X + (BAR_W * (b.parts[0] + b.parts[1])) / 2} y={b.y} fontFamily={font} fontSize={32} fontWeight={700} fill={colors.tokenText} text={b.layers} />
+              {b.parts[2] > 0.1 ? (
+                <Txt x={BAR_X + BAR_W * (1 - b.parts[2] / 2)} y={b.y} fontFamily={font} fontSize={32} fontWeight={700} fill={colors.tokenText} text={b.embedding} />
+              ) : (
+                <Txt x={BAR_X + BAR_W + 16} offsetX={-1} y={b.y} fontFamily={font} fontSize={32} fontWeight={700} fill={colors.embedding} text={b.embedding} />
+              )}
+            </Node>
+          </Node>
+        );
+      })}
+      <Txt ref={note} y={320} fontFamily={font} fontSize={28} fontStyle={'italic'} fill={colors.textMuted} text={'share of the parameters: as models grow, the layers take almost all of it'} opacity={0} />
     </>,
   );
 
@@ -481,5 +570,25 @@ export default makeScene2D(function* (view) {
     yield* correct(words, paces[r]);
     yield* waitFor(0.6);
   }
-  yield* waitFor(3);
+  yield* waitFor(1.5);
+
+  // --- This process is Pre-Training ------------------------------------------------
+  yield* waitUntil('pretraining');
+  yield* all(veil().opacity(0.985, 0.8), pretraining[0]().opacity(1, 0.8));
+  yield* pretraining[1]().opacity(1, 0.5);
+  yield* waitFor(2);
+
+  // --- What gets tuned -------------------------------------------------------------
+  yield* waitUntil('tuned');
+  yield* tunedTitle().opacity(1, 0.5);
+  yield* sequence(0.5, ...legend.map(l => l().opacity(1, 0.5)));
+  yield* waitFor(0.6);
+  for (const b of bars) {
+    yield* b.node().opacity(1, 0.3);
+    yield* b.grow(1, 1, easeOutCubic);
+    yield* b.labels().opacity(1, 0.4);
+    yield* waitFor(0.4);
+  }
+  yield* note().opacity(1, 0.6);
+  yield* waitFor(5);
 });

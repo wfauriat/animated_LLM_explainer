@@ -587,6 +587,28 @@ User feedback and changes:
 
 **Follow-up (distributed training):** right after the racks appear, three brackets right of the truth column group the problems: rows 1–3, 4–6 and 7–8 (the last problem, below "⋮", is not in a group). Each bracket draws a dashed cyan link to one row of racks (top, middle, bottom). This adds 1.9 s, so the round markers move to 20.75, 26.1 and 30.75. The user's text edits are kept: "Sources", "Tons of prediction problems (highly parallelizable)", "Distributed training on enormous clusters (trillions of tokens)". Scene 10 is 34.3 s; the video is about 405.8 s (6 min 46 s).
 
+
+## 34. Housekeeping and the Scene 10 closing
+
+**Git cleanup:**
+- A 10 MB `project.mp4` had been committed at the repository root in "added scene 5 and 6" and removed in the next commit, but it stayed in the history.
+- It was removed from all commits with `git filter-branch`, followed by `gc`. `.git` went from 11 MB to 340 KB, and every commit from "added scene 5 and 6" onward has a new ID.
+- `*.mp4` was added to `.gitignore`.
+- The user force-pushed to GitHub.
+
+**Scene 10 closing** (new markers `pretraining` 32.75 and `tuned` 36.05):
+- **Numbers checked:**
+  - Within a transformer layer, attention is about 1/3 (4·d²) and the feed-forward network about 2/3 (8·d²).
+  - GPT-2 small: layers 85.1 M (68%) and embeddings (tokens + positions) 39.4 M (32%) of 124.4 M.
+  - GPT-3: layers 174.0 B (99.6%) and embeddings 0.64 B (0.4%).
+  - So the user's "2/3 layers, 1/3 embedding" holds only for small models. The user chose to show both models side by side.
+- **What happens:**
+  1. The screen dims (a 0.985 veil), and "This process is “Pre-Training”" appears, with "(the P in GPT)" below. "Pre-Training" and the P are in amber.
+  2. Then "What gets “tuned”:" appears, with the legend: "the stack of transformer layers (the T in GPT)" (T in amber), then "attention heads" (pink) + "feed-forward networks" (cyan), then "+ the embedding table" (lavender, the Scene 4 embedding colour).
+  3. Two stacked bars grow in turn: GPT-2 small (124 M) with 68% | 32%, and GPT-3 (175 B) with 99.6% | 0.4% (a sliver, labelled outside the bar).
+  4. A note: "share of the parameters: as models grow, the layers take almost all of it".
+- **Length:** Scene 10 is 48.5 s; the video is about 420 s (7 min). Checked with stills.
+
 ---
 
 ## How to render the full video

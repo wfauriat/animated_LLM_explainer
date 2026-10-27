@@ -260,3 +260,14 @@ rapid pace [in order to illustrate the amount of processed problem and texts].
 You can end by displaying : "these tasks can me massively parallelise on 
 enormous computer clusters". In a corner, you can display a remainder (in small)
 of a handful (say 12) cogs nutches being very slowly adjusted and nudged. 
+
+It should end with the screen getting dimed and the following text displayed : 
+"This process is "Pre-Training" (the P in GPT)". 
+The next block should read : what gets "tuned" => the stack of transformer (The T in GPT)
+layers (approx 2/3 of the parameter count : attention heads + Feed-Forward Networks) 
++ the embedding table (approx 1/3 of the parameter count). 
+Check the numbers, and try to make this display quite clear and readable
+
+
+-- Sequence / scene 11
+

@@ -28,6 +28,14 @@
     {
       "name": "round-3",
       "targetTime": 30.75
+    },
+    {
+      "name": "pretraining",
+      "targetTime": 32.75
+    },
+    {
+      "name": "tuned",
+      "targetTime": 36.05
     }
   ],
   "seed": 302470543
