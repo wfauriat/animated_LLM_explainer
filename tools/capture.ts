@@ -19,6 +19,14 @@ const playback = (renderer as any).playback;
     await playback.recalculate();
     return playback.duration / settings.fps;
   },
+  // Start time and length of each scene, in seconds (call after duration()).
+  scenes(): {name: string; start: number; length: number}[] {
+    return playback.scenes.current.map((s: any) => ({
+      name: s.name,
+      start: s.firstFrame / settings.fps,
+      length: (s.lastFrame - s.firstFrame) / settings.fps,
+    }));
+  },
   async renderAt(time: number): Promise<string> {
     await renderer.renderFrame(settings, time);
     return renderer.stage.finalBuffer.toDataURL('image/png');

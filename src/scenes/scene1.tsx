@@ -27,11 +27,8 @@ import {
   USER_2,
 } from '../components/Conversation';
 import {Desk, Monitor} from '../components/Monitor';
-import {ROOM_FULL} from '../layout';
+import {CHAT_ZOOM, ROOM_FULL} from '../layout';
 import {colors} from '../theme';
-
-// Camera framing at start: tight on the screen.
-const ZOOM_START = 1.08;
 
 export default makeScene2D(function* (view) {
   view.fill(colors.room);
@@ -42,7 +39,7 @@ export default makeScene2D(function* (view) {
 
   view.add(
     <>
-      <Node ref={world} scale={ZOOM_START}>
+      <Node ref={world} scale={CHAT_ZOOM}>
         <Desk />
         <Monitor>
           <ChatApp refs={chat} />

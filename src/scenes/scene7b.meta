@@ -1,0 +1,30 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "context",
+      "targetTime": 0.5
+    },
+    {
+      "name": "generate",
+      "targetTime": 4.594000000000001
+    },
+    {
+      "name": "look-back",
+      "targetTime": 8.494
+    },
+    {
+      "name": "guess",
+      "targetTime": 13.394000000000002
+    },
+    {
+      "name": "pick",
+      "targetTime": 16.194000000000003
+    },
+    {
+      "name": "as-if",
+      "targetTime": 20.194000000000006
+    }
+  ],
+  "seed": 1189213722
+}

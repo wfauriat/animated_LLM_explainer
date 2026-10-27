@@ -60,6 +60,9 @@ try {
 
   const duration = await page.evaluate(() => window.capture.duration());
   console.log(`Project duration: ${duration.toFixed(2)} s`);
+  for (const s of await page.evaluate(() => window.capture.scenes())) {
+    console.log(`  ${s.name.padEnd(10)} ${s.start.toFixed(2).padStart(7)} s  (${s.length.toFixed(2)} s)`);
+  }
 
   if (video) {
     const result = await page.evaluate(() => window.capture.renderVideo());

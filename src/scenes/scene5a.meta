@@ -2,24 +2,28 @@
   "version": 0,
   "timeEvents": [
     {
-      "name": "shrink",
+      "name": "power",
       "targetTime": 0.5
     },
     {
+      "name": "shrink",
+      "targetTime": 3
+    },
+    {
       "name": "sentence",
-      "targetTime": 1.9
+      "targetTime": 4.4
     },
     {
       "name": "generate",
-      "targetTime": 4.4499999999999975
+      "targetTime": 6.95
     },
     {
       "name": "standby",
-      "targetTime": 12.400000000000007
+      "targetTime": 14.9
     },
     {
       "name": "envelope",
-      "targetTime": 14.900000000000007
+      "targetTime": 17.4
     }
   ],
   "seed": 1811069866

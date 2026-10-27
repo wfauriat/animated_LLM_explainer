@@ -1,6 +1,16 @@
 // Frame-level placements shared across scenes (frame is 1920x1080, origin at center).
+import {Node} from '@motion-canvas/2d';
 import {Vector2} from '@motion-canvas/core';
 import {COVER_Y, SERVER_H} from './components/Server';
+
+// Where `node` sits in the coordinates of `space` (e.g. a layer of flying
+// chips). absolutePosition() alone is in canvas pixels, origin top-left.
+export function positionIn(node: Node, space: Node) {
+  return node.absolutePosition().transformAsPoint(space.worldToLocal());
+}
+
+// Scene 1's opening shot: tight on the chat screen (also Scene 7).
+export const CHAT_ZOOM = 1.08;
 
 // The room (monitor + desk + character) as seen at the end of Scene 1 ...
 export const ROOM_FULL = {position: new Vector2(0, -60), scale: 0.42};

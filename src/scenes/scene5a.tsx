@@ -1,22 +1,26 @@
-// Scene 5a — Autoregressive generation. The machine (now battery powered)
-// shrinks to the bottom; above it, the sentence grows one token at a time,
-// each new token coming out of the machine. At "<end>" the machine goes to
-// standby, and the answer is folded into an envelope (the response).
+// Scene 5a — Autoregressive generation. The crank is dropped and a battery
+// (the power supply) is plugged into the master gear. The machine shrinks to
+// the bottom; above it, the sentence grows one token at a time, each new token
+// coming out of the machine and each pass drawing a surge of power. At "<end>"
+// the machine goes to standby, and the answer is folded into an envelope.
 import {Circle, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
 import {
   all,
   chain,
   createRef,
   createSignal,
+  easeInCubic,
   easeInOutCubic,
   easeInOutSine,
+  easeOutCubic,
   linear,
   loop,
   sequence,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
-import {createBattery} from '../components/Battery';
+import {Battery, createBattery} from '../components/Battery';
+import {positionIn} from '../layout';
 import {colors, font} from '../theme';
 import {Core} from '../scene4/Core';
 import {
@@ -33,16 +37,23 @@ import {END_TOKEN, Envelope, ENVELOPE_H, ENVELOPE_W, GENERATED} from '../scene5/
 const RIG_SCALE = 0.6;
 const BUBBLE_TOP = -470;
 const chipStyle = {width: null as null, padding: [0, 16] as [number, number]};
+const FLOW_IDLE = 0.5; // energy flow between passes (1 during a pass)
 
-// One token's worth of work: the columns light up in turn, the cogs advance.
-function* pulse(core: Core, duration: number) {
+// One token's worth of work: the columns light up in turn, the cogs and the
+// dials advance, and a surge of power flows in from the battery.
+function* pulse(core: Core, battery: Battery, duration: number) {
+  const running = core.rows.slice(0, -1); // the last row left for the output
   yield* all(
     core.crankAngle(core.crankAngle() + 120, duration, easeInOutSine),
     ...core.colAngle.map(a => a(a() + 30, duration, easeInOutSine)),
+    ...running.flatMap(row =>
+      row.dials.map(d => d.rim.rotation(d.rim.rotation() - 75, duration, easeInOutSine)),
+    ),
     sequence(
       duration / 8,
       ...core.colGlow.map(g => g.opacity(0.35, duration / 8).to(0, duration / 4)),
     ),
+    battery.flow.opacity(1, duration * 0.3).to(FLOW_IDLE, duration * 0.7),
   );
 }
 
@@ -50,18 +61,11 @@ export default makeScene2D(function* (view) {
   view.fill(colors.machineBg);
   const clock = createSignal(0);
 
-  // Starts on 4e's last frame: crank gone, battery plugged in.
-  const machine = createMachine('4e');
+  // Starts on 4d's last frame: crank in hand, the N+1 arrow still showing.
+  const machine = createMachine('5a');
   const {core, output} = machine;
-  core.crank.opacity(0);
-  output.arrow.opacity(0);
-  output.arrowLabel.opacity(0);
-  core.colAngle.forEach(a => a(a() + 240));
-  core.crankAngle(core.crankAngle() + 360 * 4);
   const battery = createBattery(clock, POWER_BATTERY, MASTER.addX(40));
-  battery.cable.end(1);
-  battery.flow.opacity(1);
-  battery.level(3.1);
+  battery.node.y(800);
 
   const rig = createRef<Node>();
   const bubble = createRef<Rect>();
@@ -107,6 +111,20 @@ export default makeScene2D(function* (view) {
   yield clock(1000, 1000, linear);
   yield* waitFor(0.5);
 
+  // --- The crank is dropped, the battery takes over -----------------------
+  yield* waitUntil('power');
+  yield* all(
+    core.crank.y(core.crank.y() + 420, 1.0, easeInCubic),
+    core.crank.rotation(25, 1.0, easeInCubic),
+    core.crank.opacity(0, 1.0, easeInCubic),
+    output.arrow.opacity(0, 0.6),
+    output.arrowLabel.opacity(0, 0.6),
+    chain(waitFor(0.3), battery.node.y(POWER_BATTERY.y, 1.0, easeOutCubic)),
+  );
+  yield* battery.cable.end(1, 0.5);
+  yield* battery.flow.opacity(FLOW_IDLE, 0.4);
+  yield* waitFor(0.3);
+
   // --- The machine makes room for the text --------------------------------
   yield* waitUntil('shrink');
   yield* all(
@@ -127,16 +145,16 @@ export default makeScene2D(function* (view) {
 
   // --- One token at a time, each produced by a full pass of the machine ---
   yield* waitUntil('generate');
-  const spawn = () => output.words[PICKED].absolutePosition();
+  const spawn = () => positionIn(output.words[PICKED], flyLayer());
   function* generate(text: string, fill: string, textFill: string, duration: number) {
     const slot = makeChip(text, fill, {...chipStyle, textFill, opacity: 0});
     bubble().add(slot);
-    const target = slot.absolutePosition();
+    const target = positionIn(slot, flyLayer());
     const fly = makeChip(text, fill, {...chipStyle, textFill});
     fly.position(spawn()).scale(RIG_SCALE * FOLDED_SCALE);
     flyLayer().add(fly);
     yield* all(
-      pulse(core, duration),
+      pulse(core, battery, duration),
       chain(
         waitFor(duration * 0.45),
         all(

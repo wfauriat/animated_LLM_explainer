@@ -151,3 +151,24 @@ the machine, and that latter dials are "nudge" by "influences" above.
 On the right side of the transformer core, two alternative predictions are displayed
 at the end : N+1 is "to" N+2 is "fish" (in one alternative), N+1 is "each" N+2 is
 "month" (for the second alternative).
+
+
+-- Sequence / Scene 7
+
+Now that we have introduced the notion of context flowing forward to the "tip"
+of the prediction sequence, we may keep that train of thoughs to do the following.
+Discuss "emerging" "reasoning" (or what behave "as if" one were reasoning)
+and long range attention within the "context window".
+Also, I want to display some terminology : "good next token guesser".
+[This is the essence of the language model, a machine that tries to guess
+right, while integrating as much context as he as been given. And guessing right 
+means taking into account, grammar, syntax, knowledge, facts, clues, etc.] 
+In this scene, we re-use the interaction in the conversation app.
+The user describe a longer context (in its text box). We will take the imaging
+of the cluedo (a trivia to guess the name of the murderer). The user writes something
+along the lines of (you may adjust, while keeping the idea) : "He walked
+slowly into the kitchen. She was sitting in the living room drinking tea.
+A large noise was heard upstairs. ..." Then the user asks : "who is the 
+murderer". The assistant replies : "the murderer is most likely Colonel Mustard".
+You may display, at the end of this animation : "guessing correctly means, looking
+at context, clues, facts. (as if reasoning)"

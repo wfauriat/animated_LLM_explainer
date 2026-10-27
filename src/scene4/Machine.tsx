@@ -1,5 +1,5 @@
 // The whole Scene 4 machine, rebuilt in the state a given sub-scene starts
-// from (4c, 4d or 4e), so each sub-scene continues frame-exactly.
+// from (4c, 4d or 5a), so each sub-scene continues frame-exactly.
 import {CubicBezier, Node, Rect, Txt} from '@motion-canvas/2d';
 import {Vector2} from '@motion-canvas/core';
 import {colors, font} from '../theme';
@@ -22,7 +22,7 @@ import {
 import {createOutput, Output} from './Output';
 import {createFoldedInput, FoldedInput} from './parts';
 
-export type Stage = '4c' | '4d' | '4e';
+export type Stage = '4c' | '4d' | '5a';
 
 export interface Machine {
   node: Node;
@@ -58,7 +58,7 @@ export function createMachine(stage: Stage): Machine {
 
   const guides = embeddingGuides();
   const core = createCore();
-  const output = createOutput(stage === '4e');
+  const output = createOutput(stage === '5a');
 
   if (stage === '4c') {
     // Only the stacks at the entrance exist yet.
@@ -70,7 +70,7 @@ export function createMachine(stage: Stage): Machine {
     core.rowsEllipsis.opacity(0);
     guides.forEach(g => g.opacity(0.3));
   }
-  if (stage === '4e') {
+  if (stage === '5a') {
     // The last row has left the core to become the Top-5.
     const last = core.rows[core.rows.length - 1];
     last.x(OUT_EXIT_X);

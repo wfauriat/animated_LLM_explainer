@@ -271,6 +271,51 @@ New:
 
 ---
 
+# Day 3 — 2026-10-27
+
+## 17. Scene 4e merged into Scene 5a
+
+- **User decision:** Scene 4e was a full sequence where little happens. Autoregressive generation, with power pumping in and cogs turning, makes the same point.
+- **Change:**
+  - `scene4e` is deleted, and Scene 4d cuts straight to Scene 5a.
+  - Scene 5a opens on Scene 4d's last frame. The crank drops, the N+1 arrow fades, and the battery rises and plugs into the master gear (about 2.5 s, new marker `power`). Then the existing `shrink` and generation follow.
+  - Each token pass also sends a surge of energy through the battery cable and advances the rows' dials.
+  - The `Stage` in `Machine.tsx` is renamed from `'4e'` to `'5a'`.
+- **The battery never drains:** it represents the power supply (in practice the grid), not a charge that runs down.
+- **Tools:** `npm run snap` now prints each scene's start time and length.
+- **Total length:** 241.9 s (4 min 2 s).
+
+## 18. Scene 7: brief and decisions
+
+The user added Scene 7 to the timeline: emerging "as if" reasoning, long-range attention in the context window, the term "good next-token guesser", and a Cluedo-style riddle in the chat.
+
+User decisions:
+- **Riddle:** my rewrite, in which the clues rule out every suspect but one (the Colonel claims he walked in the rain, yet his shoes are dry). Cluedo names kept.
+- **Reply:** only the guess, "The murderer is most likely Colonel Mustard.", with no reason given.
+- **Kept simple:** one burst of attention links, not a two-step "clues combine" version. The example is an illustration, not an exact model.
+- **No Scene 7c:** the closing message goes at the bottom of Scene 7b instead.
+
+## 19. Scene 7: the riddle and long-range attention
+
+| Sub-scene | Content | Voice-over markers |
+|---|---|---|
+| 7a Riddle (about 16.5 s) | Scene 1's screen framing with a fresh conversation, fading in from black. The riddle is pasted in one go (the input field shows a preview cut short). "Who is the murderer?" is typed as its own message. The typing indicator shows, then the reply. | `riddle`, `question`, `reply` |
+| 7b Context window (about 27 s) | The chat fades and the whole conversation becomes a ribbon of token chips inside a "Context window" frame. A cog (the machine) below it produces "The murderer is most likely" token by token. For "Colonel", faint magenta links reach back to every token, then the clue tokens' links thicken and glow ("dry" strongest, then rain, shoes, garden, Colonel, murderer, together, kitchen, maid, dead). A Top-5 appears, headed "A good next-token guesser": Colonel 68%, Professor, Mrs, Miss, maid. "Colonel" is picked, then "Mustard" and "." follow. The caption: "Guessing correctly means looking at context, clues and facts… *as if reasoning*", and below it "(and answering properly implies correct grammar, syntax, …)". | `context`, `generate`, `look-back`, `guess`, `pick`, `as-if` |
+
+**New and changed code:**
+- `src/scene7/parts.tsx`: riddle text, a simple tokenizer (words and punctuation), and the finished exchange.
+- `userPastes()` in `ChatApp.tsx`.
+- `CHAT_ZOOM` moved to `src/layout.ts`.
+
+**Bug fix: `positionIn(node, space)` in `src/layout.ts`.**
+- **Problem:** `absolutePosition()` is in canvas pixels (origin at the top-left), not centred scene coordinates.
+- **Effect:** Scene 7b's links fanned in from off-screen. The same bug was also in Scene 5a, where the flying tokens started beside the machine instead of at the picked word, and flew toward the wrong spot.
+- **Fix:** both scenes now use `positionIn()`.
+
+**Length:** 285.4 s (4 min 45 s).
+
+---
+
 ## How to render the full video
 
 Close any `npm start` editor tab first (not required, but it frees the CPU). Then, from the project folder:

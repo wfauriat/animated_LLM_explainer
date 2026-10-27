@@ -217,8 +217,25 @@ export function* userSends(refs: ChatRefs, text: string) {
   refs.placeholder().text('');
   yield* refs.typed().text(text, text.length / 24, linear);
   yield* waitFor(0.35);
+  yield* send(refs, text);
+}
+
+// The user pastes a long text: the one-line input field shows `preview`
+// (cut short), then the whole `content` is sent.
+export function* userPastes(
+  refs: ChatRefs,
+  preview: string,
+  content: string | Node | Node[],
+) {
+  refs.placeholder().text('');
+  refs.typed().text(preview);
+  yield* waitFor(0.6);
+  yield* send(refs, content);
+}
+
+function* send(refs: ChatRefs, content: string | Node | Node[]) {
   yield* refs.send().scale(0.85, 0.08).to(1, 0.12);
-  const {row, bubble} = makeBubble('user', text);
+  const {row, bubble} = makeBubble('user', content);
   refs.typed().text('');
   refs.placeholder().text('Type a message…');
   refs.messages().add(row);
