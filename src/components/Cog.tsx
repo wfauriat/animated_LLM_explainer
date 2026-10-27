@@ -1,6 +1,7 @@
 // Gear outline with trapezoidal teeth (port of scratch/wheel.py), centered
 // on the origin.
-import {Path, PathProps} from '@motion-canvas/2d';
+import {Circle, Line, Node, NodeProps, Path, PathProps, Pattern} from '@motion-canvas/2d';
+import {createSignal, range, SimpleSignal, ThreadGenerator, useTime} from '@motion-canvas/core';
 import {colors} from '../theme';
 
 export function cogPath(
@@ -57,4 +58,74 @@ export function Cog({
       {...props}
     />
   );
+}
+
+// An adjustable weight: a cog turning around a fixed hub whose notch is a
+// control knob. The notch sets how fast the cog turns (its effect): pointing
+// left = slow, up = medium, right = fast.
+export interface TunableCog {
+  node: Node;
+  spin: SimpleSignal<number, void>; // the teeth turning
+  knob: SimpleSignal<number, void>; // the notch, -90 (left) to 90 (right)
+}
+
+export const TUNABLE_FILL = '#5a6476';
+
+// Turning speed (degrees per second) for a notch setting.
+export const cogSpeed = (knob: number) => 40 * (2 + knob / 90);
+
+export function createTunableCog(radius: number, props: NodeProps = {}): TunableCog {
+  const spin = createSignal(0);
+  const knob = createSignal(0);
+  const hub = radius * 0.46;
+  const node = (
+    <Node {...props}>
+      <Cog teeth={14} radius={radius} root={0.84} hole={0} fill={TUNABLE_FILL} rotation={spin} />
+      {range(5).map(i => (
+        <Line
+          rotation={-90 + i * 45}
+          points={[[0, -hub - radius * 0.07], [0, -hub - radius * 0.17]]}
+          stroke={colors.steelDark}
+          lineWidth={radius * 0.045}
+          lineCap={'round'}
+        />
+      ))}
+      <Circle size={hub * 2} fill={colors.steelDark} stroke={colors.steel} lineWidth={radius * 0.03} />
+      <Line
+        rotation={knob}
+        points={[[0, -hub * 0.15], [0, -hub * 0.82]]}
+        stroke={colors.dialFace}
+        lineWidth={radius * 0.1}
+        lineCap={'round'}
+      />
+    </Node>
+  ) as Node;
+  return {node, spin, knob};
+}
+
+// Keeps the cogs turning, each at the speed its notch sets (run in the
+// background).
+export function* driveCogs(cogs: TunableCog[]): ThreadGenerator {
+  let last = useTime();
+  while (true) {
+    yield;
+    const now = useTime();
+    for (const c of cogs) c.spin(c.spin() + cogSpeed(c.knob()) * (now - last));
+    last = now;
+  }
+}
+
+// Repeating cog texture (one cog per `cell` square), for surfaces holding
+// far too many cogs to draw one by one.
+export function cogTexture(cell: number, fill: string, background: string) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = cell;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, cell, cell);
+  ctx.translate(cell / 2, cell / 2);
+  ctx.fillStyle = fill;
+  const r = cell * 0.4;
+  ctx.fill(new Path2D(cogPath(12, r, r * 0.82, r * 0.3)), 'evenodd');
+  return new Pattern({image: canvas, repetition: 'repeat'});
 }

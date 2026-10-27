@@ -314,6 +314,124 @@ User decisions:
 
 **Length:** 285.4 s (4 min 45 s).
 
+**Full render:** `output/project.mp4`, 285.4 s, 1920×1080, 60 fps, 17,126 frames. Checked by pulling frames from the file.
+
+## 20. Scene 8: brief and decisions
+
+The user added Scene 8 to the timeline: scale, with cogs as "weights" and a zoom-out through layers and embedding depth, using the "planet → universe" analogy.
+
+**Recap of the story so far (archive only, not rendered):** the machine has tokenization, embedding, transformer layers (cogs) and attention. It runs on remote premises, is reached over the network, and sends its responses back to the user's terminal. What it produces: a very good next-token guesser that uses its context, "as if" reasoning. Next: how such a machine is built.
+
+User decisions:
+- **No autocomplete bridge:** the earlier scenes already make the point.
+- **Tunable cog, to be reused in later scenes about tuning:**
+  - the outer teeth carry the mechanical action (how much the cog drives the dials);
+  - a centre notch tunes how strongly it acts, as if adjusting its torque.
+- **Figures:** only a few landmarks, 125 M (GPT-2) and 175 B (GPT-3). Today's largest models are given only as a magnitude, "hundreds of billions".
+- **Dates:** small, next to the model name only.
+
+## 21. Scene 8: scale (one scene, about 42 s)
+
+**What happens:**
+1. **One cog:** "One cog = one weight", with callouts for the teeth ("drive the dials") and the notch ("tunes how strongly it acts"). The notch is turned back and forth.
+2. **A dozen cogs:** zoom out to 3 layers × 4 cogs, each notch set differently. The counter shows 12.
+3. **GPT-2:** zoom out to 12 layers × 8 cogs, with depth planes fanning out behind and labelled 1, 2, 3, 4, ⋰, 768. The counter rolls to 125,000,000 (GPT-2 · 2019).
+4. **GPT-3:** the cogs crossfade into textured slabs (a repeating cog pattern). They multiply to 96 layers and grow taller and deeper, 6×, as an illustration of width × width. The counter rolls to 175,000,000,000 (GPT-3 · 2020).
+5. **Today:** zoom out again, with a dashed outline about 1.8× GPT-3 (illustrative). The counter reads "hundreds of billions" (today's largest models).
+6. **Why:** the machine dims, and three lines appear in turn:
+   - "To model ALL language, in all its diversity, there are countless possibilities, associations, situations and contexts to represent…"
+   - "…the machinery has to account for grammar, syntax, knowledge, facts…"
+   - "Any model of language has **billions of knobs**", next to a small tunable cog being turned.
+
+**Markers:** `weight`, `tune`, `dozen`, `gpt2`, `gpt3`, `today`, `why`, `grammar`, `knobs`.
+
+**New code:**
+- `createTunableCog()` and `cogTexture()` in `src/components/Cog.tsx`.
+- Scene 7b now fades out at its end, so Scene 8 starts on an empty dark frame.
+
+**Length:** 327.8 s (5 min 28 s).
+
+## 22. Scene 8: first iteration
+
+User feedback:
+- **No made-up terms** ("teeth", "notch", "one cog = one weight"). The imagery should carry it. The only label is "adjustable weight (effect)", shown while the notch is being turned.
+- **The notch sets the speed:** pointing left is slow, up is medium, right is fast. A circular arrow over the cog shows the speed with 1, 2 or 3 ticks.
+- **At the dozen step,** the notches are adjusted, not the cogs. The cogs then turn at different speeds.
+- **GPT-2 axes:**
+  - vertical: 12 rows, "12 attention heads";
+  - width: "12 transformer layers";
+  - depth: "embedding dimension" (1, 2, 3, 4, ⋰, 768).
+- **Attention:** bottom left, the current token with 6 previous positions (numbers only, no words). Pink links flash from them into the current token.
+
+Changes:
+- **`createTunableCog()`:** the hub is now a fixed control knob. Only the teeth turn; the notch (`knob`, −90 to 90) has its own setting, and the tick marks around the hub stay fixed.
+- **`cogSpeed(knob)`:** 40, 80 or 120 °/s for left, up or right.
+- **`driveCogs(cogs)`:** a background thread that turns each cog at the speed its notch sets.
+- **Scene 8 sequence:**
+  1. close-up, `tune` (left → slow, right → fast, back up);
+  2. `dozen` (the notches spread out to their own settings);
+  3. `gpt2` (axes and labels);
+  4. `attention`: the current token's arrow goes in, and 3 different link patterns flash, one per head.
+- **Counter** moved to the bottom right.
+- **Markers:** `tune`, `dozen`, `gpt2`, `attention`, `gpt3`, `today`, `why`, `grammar`, `knobs`.
+
+**Length:** Scene 8 is about 49 s; the video is 335.1 s (5 min 35 s).
+
+## 23. Scene 8: second iteration
+
+User feedback:
+- **Token layout:** the tokens go in a vertical column on the left, matching Scene 4/6, to keep the cognitive load low.
+- **Words, not numbers:** reuse "He put money in the bank", with "bank" attending to the earlier words.
+- **No arrow** into the cogs. Instead, "12 attention heads" flashes in the links' pink colour each time the links flash.
+
+Changes:
+- The token column sits at screen x = −700, with chips at 0.6 scale and "bank" outlined in pink.
+- The attention arcs use Scene 6's style: they arch out on the left of the column, with arrows.
+- 3 head patterns: the first leans on "money", the others are spread differently.
+- The machine shifted 50 px to the right to make room.
+
+**Tool note:** an open editor tab had regenerated `scene8.meta` with stale marker times from earlier versions. Some markers fired early, which squashed the hold times, and `attention` was set later than `gpt3`. The file was rewritten with the scene's natural times. When a scene's sequence changes, check its `.meta` file (or let the editor rewrite it), because stale times change the pacing silently.
+
+**Length:** Scene 8 is 48.3 s; the video is 334.5 s (5 min 35 s).
+
+## 24. Scene 8: third iteration (passing through model sizes)
+
+**User feedback:** show the dimensions growing along with the counter: GPT-2 small, medium, large, XL, then GPT-3. The numbers are passing points, shown briefly, not held long enough to read in full.
+
+**Data** (one consistent set of commonly quoted counts):
+
+| Model | Layers | Heads | Embedding dim | Weights |
+|---|---|---|---|---|
+| GPT-2 small | 12 | 12 | 768 | 124M |
+| GPT-2 medium | 24 | 16 | 1,024 | 355M |
+| GPT-2 large | 36 | 20 | 1,280 | 774M |
+| GPT-2 XL | 48 | 25 | 1,600 | 1.558B |
+| GPT-3 | 96 | 96 | 12,288 | 175B |
+
+**Changes:**
+- **The size is now driven by signals** (`layers`, `heads`, `dim`):
+  - each slab's opacity follows `layers`, so new layers fade in as the number passes them;
+  - height is (heads/12)^0.85 and depth is (dim/768)^0.65, compressed so GPT-3 still fits.
+- **The axis labels track the machine on screen** (computed from the camera). Their numbers count up through the in-between values: "N attention heads" (vertical, left), "N transformer layers" (top), and "embedding dimension N" (top-left, starting at the back corner).
+- **`growTo(model)`:** the camera fit, the three dimensions, the counter and the tag change together. Each step lasts 0.8 s, and the final step to GPT-3 lasts 1.8 s.
+- **The axis labels fade at `today`**, since today's dimensions aren't published.
+- **The GPT-2 small counter now reads 124,000,000.**
+
+**Length:** Scene 8 is 49.3 s, about 1 s longer than before.
+
+**Follow-up:** the run through the sizes was too fast to take in. Each GPT-2 step is now 1.3 s plus a 0.4 s pause on the model, and the GPT-3 step is 2.2 s. Later markers moved back by 3.1 s. Scene 8 is 52.4 s; the video is 338.6 s (5 min 39 s).
+
+## 25. Scene 8: shorter ending
+
+**User feedback:** the closing was too wordy. Keep the machine on screen and put one text box at the bottom.
+
+**Changes:**
+- The three closing lines and the small knob cog are gone. The machine and the "today" outline stay at full brightness; only the counter fades.
+- A single bordered box at the bottom reads: "diversity of grammar, syntax, knowledge, situations, context, … ⇒ **billions of knobs**".
+- Markers: `grammar` and `knobs` are removed, and `why` shows the box.
+
+**Length:** Scene 8 is 43.9 s; the video is 330.1 s (5 min 30 s).
+
 ---
 
 ## How to render the full video

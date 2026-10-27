@@ -10,7 +10,7 @@ equations. Maths should be kept to an absolute minimal. Visual and examples and
 analogies should be prefered.
 
 
--- Sequence / Scene 1
+-- Sequence / Scene 1 (1st version done)
 
 A handful of text boxes (bubles, of the kind messaging apps use), introducing
 the concept of "conversational agent"
@@ -34,7 +34,7 @@ with "someone".
 Boxes should pop sequentially, with a bit of delay so that the audiance can read
 
 
--- Sequence / Scene 2
+-- Sequence / Scene 2 (1st version done)
 
 Split screen scene. On the bottom left pannel, a character, sat on a chair,
 with its back turned to us, facing forward to a dimly lighted computer screen.
@@ -50,7 +50,7 @@ inside]. So here, the central server should appear all-powerful, yet benevolent
 processing received information, as if engaging with all users.
 
 
--- Sequence / Scene 3
+-- Sequence / Scene 3 (1st version done)
 
 The human character fades out, the camera zooms in on the all-powerful, benevolent
 server. Then top and bottom screws above a below the "human face cover" are unscrewed.
@@ -62,7 +62,7 @@ On the bottom of the scene, there is a clearly visible battery [representing
 needed power, to power the machine], and energy is continuously flowing to the 
 machine.
 
--- Sequence / Scene 4
+-- Sequence / Scene 4 (1st version done)
 
 This is a central piece of the animation, so it is quite dense.
 The idea is to explain with a visualization that is as simple as possible,
@@ -110,7 +110,7 @@ The svg you work with does not have to be exactly followed, do whatever you feel
 carries best the messages while getting inspired from my input.
 
 
--- Sequence / Scene 5
+-- Sequence / Scene 5 (1st version done)
 
 At the top of the screen, a text box (of the same kind of scene 1, assistant
 color), a longer sentence is generated one token at the time : "It was raining
@@ -130,7 +130,7 @@ reaches the "end" reason, the machinery "stops" or rather moves into
 stand-by / listening, until further sollicitation].
 
 
--- Sequence / Scene 6
+-- Sequence / Scene 6 (1st version done)
 
 We come back to the transformer core, with turning cogs. Here only the tokens
 appear, not their index or the dictionary lookup.
@@ -153,7 +153,7 @@ at the end : N+1 is "to" N+2 is "fish" (in one alternative), N+1 is "each" N+2 i
 "month" (for the second alternative).
 
 
--- Sequence / Scene 7
+-- Sequence / Scene 7 (1st version done)
 
 Now that we have introduced the notion of context flowing forward to the "tip"
 of the prediction sequence, we may keep that train of thoughs to do the following.
@@ -172,3 +172,38 @@ A large noise was heard upstairs. ..." Then the user asks : "who is the
 murderer". The assistant replies : "the murderer is most likely Colonel Mustard".
 You may display, at the end of this animation : "guessing correctly means, looking
 at context, clues, facts. (as if reasoning)"
+
+
+-- Sequence / Scene 8 
+
+[sum up so far]
+So far, we have shown the "inner workings" (assuming it's "built") : a machinery
+with tokenization, embedding, transformer layers (cogs) with attention (top-down
+connections between cogs), powered at remote premises, prompted via network
+query messages, and sending its responses back to a user, in front of its terminal.
+The user as the impression of seamless interaction with an "intelligent agent",
+but he "trigerring" a large marchinery.
+And we have show "what" that machinery produces : a very good next-token guesser, able
+to integrate the provided context and produce good answers (as if by reasoning, using
+a "model of the language"). Now let us move to how to build such machinery. 
+
+On this slide, I want to illustrate the idea of scale. The next-token guesser
+is somehow an "auto-completion" engine, but one with massive SCALE (say since 2019, 2020 up to now).
+Here, the idea for visualization would be to show the core of the transformation
+layers, with cogs (as the later have come to symbolize "weigths" : maybe the term
+can appear here). At first a few (say a dozen) cogs are visible, on a few successive
+forward oriented layers, then the camera zooms out, to reaveal more layers 
+(12 I think on GPT2-small, now 96+ on modern models). Then a depth slice could 
+expend also to allow to visualize the embedding depth (2, 3, 4, some ellipsis,
+up to embeding 512 and up on modern models). A few figures (architecture numbers
+and scale) can be given here, say from GPT-3 if they are available. So horizontal
+layers times embedding depth make the scale grow to millions and up to billions of 
+weights (cogs). The idea is to give an "idea" of scale, by zooming out progressively.
+One analogy (for you to think of, not necessarily to use in the scene), is the astrology one,
+first the scale of the planet, then the solar system, then our galaxy, then other
+galaxies, then the universe. 
+What could be written down on the scene something along the following :
+"to model ALL language and its diversity, there is a lot of possiblities,
+associations, situations, context to represent". Also : "the machinery has to
+account for grammar, syntax, knowledge, facts, ...". So, "any model of language,
+as "billions of knobs"".

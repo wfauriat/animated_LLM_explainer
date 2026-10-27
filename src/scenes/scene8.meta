@@ -1,0 +1,34 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "tune",
+      "targetTime": 2
+    },
+    {
+      "name": "dozen",
+      "targetTime": 9.4
+    },
+    {
+      "name": "gpt2",
+      "targetTime": 14.6
+    },
+    {
+      "name": "attention",
+      "targetTime": 20.2
+    },
+    {
+      "name": "gpt3",
+      "targetTime": 24.8
+    },
+    {
+      "name": "today",
+      "targetTime": 34.9
+    },
+    {
+      "name": "why",
+      "targetTime": 39.1
+    }
+  ],
+  "seed": 3520829884
+}

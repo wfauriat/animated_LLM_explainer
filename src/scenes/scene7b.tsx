@@ -322,4 +322,7 @@ export default makeScene2D(function* (view) {
   yield* waitFor(1.2);
   yield* line2.opacity(1, 0.8);
   yield* waitFor(4);
+
+  // Clear the stage for Scene 8.
+  yield* all(...view.children().map(c => c.opacity(0, 0.8)));
 });
