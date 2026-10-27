@@ -3,7 +3,7 @@
 // the bottom; above it, the sentence grows one token at a time, each new token
 // coming out of the machine and each pass drawing a surge of power. At "<end>"
 // the machine goes to standby, and the answer is folded into an envelope.
-import {Circle, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
+import {Circle, Line, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
 import {
   all,
   chain,
@@ -16,6 +16,7 @@ import {
   linear,
   loop,
   sequence,
+  Vector2,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
@@ -24,20 +25,26 @@ import {positionIn} from '../layout';
 import {colors, font} from '../theme';
 import {Core} from '../scene4/Core';
 import {
+  CHIP_W,
   FOLDED_SCALE,
+  LABEL_SCALE,
   MASTER,
-  PICKED,
+  OUT_EXIT_X,
+  OUT_ROWS_Y,
   POWER_BATTERY,
   TOKENS,
+  UNEMBED_X,
 } from '../scene4/layout';
 import {createMachine} from '../scene4/Machine';
-import {makeChip} from '../scene4/parts';
+import {makeChip, makeLabel, makeQuestionChip} from '../scene4/parts';
 import {END_TOKEN, Envelope, ENVELOPE_H, ENVELOPE_W, GENERATED} from '../scene5/parts';
 
 const RIG_SCALE = 0.6;
 const BUBBLE_TOP = -470;
 const chipStyle = {width: null as null, padding: [0, 16] as [number, number]};
 const FLOW_IDLE = 0.5; // energy flow between passes (1 during a pass)
+// While generating, the output panel gives way to a single N+1 slot.
+const N1_SLOT = new Vector2(UNEMBED_X, OUT_ROWS_Y[2]);
 
 // One token's worth of work: the columns light up in turn, the cogs and the
 // dials advance, and a surge of power flows in from the battery.
@@ -74,11 +81,27 @@ export default makeScene2D(function* (view) {
   const standbyDot = createRef<Circle>();
   const envelope = Envelope();
   envelope.opacity(0);
+  const n1 = createRef<Node>();
+  const n1Slot = makeQuestionChip();
+  n1Slot.position(N1_SLOT).scale(FOLDED_SCALE);
+  const n1Label = makeLabel('N+1');
+  n1Label.position(N1_SLOT.addY(-75)).scale(LABEL_SCALE);
 
   view.add(
     <>
       <Node ref={rig}>
         {machine.node}
+        <Node ref={n1} opacity={0}>
+          <Line
+            points={[[OUT_EXIT_X + 30, N1_SLOT.y], [N1_SLOT.x - (CHIP_W * FOLDED_SCALE) / 2 - 14, N1_SLOT.y]]}
+            stroke={colors.flowOut}
+            lineWidth={4}
+            endArrow
+            arrowSize={12}
+          />
+          {n1Slot}
+          {n1Label}
+        </Node>
         {battery.cable}
         {battery.flow}
         {battery.node}
@@ -125,11 +148,14 @@ export default makeScene2D(function* (view) {
   yield* battery.flow.opacity(FLOW_IDLE, 0.4);
   yield* waitFor(0.3);
 
-  // --- The machine makes room for the text --------------------------------
+  // --- The machine makes room for the text; the output panel gives way to
+  // a single N+1 slot ------------------------------------------------------
   yield* waitUntil('shrink');
   yield* all(
     rig().scale(RIG_SCALE, 1.4, easeInOutCubic),
     rig().y(200, 1.4, easeInOutCubic),
+    output.node.opacity(0, 0.8),
+    chain(waitFor(0.6), n1().opacity(1, 0.8)),
   );
 
   // --- The sentence so far: the prompt (blue) and "coat" (green) ----------
@@ -145,18 +171,20 @@ export default makeScene2D(function* (view) {
 
   // --- One token at a time, each produced by a full pass of the machine ---
   yield* waitUntil('generate');
-  const spawn = () => positionIn(output.words[PICKED], flyLayer());
+  const spawn = () => positionIn(n1Slot, flyLayer());
+  // The new token appears in the N+1 slot, then joins the sentence.
   function* generate(text: string, fill: string, textFill: string, duration: number) {
     const slot = makeChip(text, fill, {...chipStyle, textFill, opacity: 0});
     bubble().add(slot);
     const target = positionIn(slot, flyLayer());
     const fly = makeChip(text, fill, {...chipStyle, textFill});
-    fly.position(spawn()).scale(RIG_SCALE * FOLDED_SCALE);
+    fly.position(spawn()).scale(0);
     flyLayer().add(fly);
     yield* all(
       pulse(core, battery, duration),
       chain(
-        waitFor(duration * 0.45),
+        fly.scale(RIG_SCALE * FOLDED_SCALE, duration * 0.3, easeOutCubic),
+        waitFor(duration * 0.15),
         all(
           fly.position(target, duration * 0.55, easeInOutCubic),
           fly.scale(1, duration * 0.55, easeInOutCubic),

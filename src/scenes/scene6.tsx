@@ -89,12 +89,12 @@ const BANK = 5;
 // --- Layout -----------------------------------------------------------------
 
 const ROWS_Y = [-275, -165, -55, 55, 165, 275];
-const IN_X = -560; // main input column
-const SIDE_IN_X = -760; // side (alternative) input column
+const IN_X = -560; // input column, next to the machine
+const SIDE_IN_X = -760; // where the first sentence moves aside to
 const SPINE_X = -450;
 const ENTRY_X = -340;
 const LAYERS_X = [-110, 130];
-const OUT_X = [400, 680]; // output column per sentence
+const OUT_X = [400, 680]; // output column next to the machine; aside
 const NEXT_Y = [165, 275]; // N+1, N+2
 const PARK_Y = -110; // where the final "bank" dials are compared
 const DIAL = 64;
@@ -142,10 +142,10 @@ export default makeScene2D(function* (view) {
   // --- Build the machine ---------------------------------------------------
   const label = makeLabel('Attention');
   label.position([0, -485]).opacity(0);
-  const inputs = [RIVER, MONEY].map((s, k) =>
+  const inputs = [RIVER, MONEY].map(s =>
     s.tokens.map((t, i) =>
       makeChip(t, colors.token, {
-        position: [k === 0 ? IN_X : SIDE_IN_X, ROWS_Y[i]],
+        position: [IN_X, ROWS_Y[i]],
         scale: FOLDED_SCALE,
         opacity: 0,
       }),
@@ -267,23 +267,21 @@ export default makeScene2D(function* (view) {
     arcLayer().removeChildren();
   }
 
-  // N+1 then N+2 out of the "bank" row, in output column k.
-  function* predict(k: number, s: Sentence) {
+  // N+1 then N+2 out of the "bank" row, in the output column next to the
+  // machine. Returns the arrow from the machine and the chips group (which
+  // can later be moved aside).
+  function* predict(s: Sentence, out: {arrow?: CubicBezier; group?: Node}) {
+    const x = OUT_X[0];
     const from = new Vector2(LAYERS_X[1] + DIAL / 2 + 6, ROWS_Y[BANK]);
     const chips = s.next.map((t, n) =>
-      makeChip(t, colors.botBubble, {position: [OUT_X[k], NEXT_Y[n]], scale: 0, opacity: 0}),
+      makeChip(t, colors.botBubble, {position: [x, NEXT_Y[n]], scale: 0, opacity: 0}),
     );
-    const to = new Vector2(OUT_X[k] - 56, NEXT_Y[0]);
-    // The second column's arrow dips under the first column's chips.
-    const [p1, p2] =
-      k === 0
-        ? [from.addX(120), to.addX(-120)]
-        : [from.add([260, 190]), to.add([-120, 230])];
+    const to = new Vector2(x - 56, NEXT_Y[0]);
     const arrow = (
       <CubicBezier
         p0={from}
-        p1={p1}
-        p2={p2}
+        p1={from.addX(120)}
+        p2={to.addX(-120)}
         p3={to}
         stroke={colors.flowOut}
         lineWidth={4}
@@ -294,10 +292,10 @@ export default makeScene2D(function* (view) {
     ) as CubicBezier;
     const loopBack = (
       <CubicBezier
-        p0={[OUT_X[k] + 58, NEXT_Y[0]]}
-        p1={[OUT_X[k] + 100, NEXT_Y[0]]}
-        p2={[OUT_X[k] + 100, NEXT_Y[1]]}
-        p3={[OUT_X[k] + 58, NEXT_Y[1]]}
+        p0={[x + 58, NEXT_Y[0]]}
+        p1={[x + 100, NEXT_Y[0]]}
+        p2={[x + 100, NEXT_Y[1]]}
+        p3={[x + 58, NEXT_Y[1]]}
         stroke={colors.flowOut}
         lineWidth={3}
         endArrow
@@ -306,7 +304,10 @@ export default makeScene2D(function* (view) {
         opacity={0.8}
       />
     ) as CubicBezier;
-    outLayer().add([arrow, loopBack, ...chips]);
+    const group = (<Node>{[loopBack, ...chips]}</Node>) as Node;
+    outLayer().add([arrow, group]);
+    out.arrow = arrow;
+    out.group = group;
     yield* arrow.end(1, 0.8, easeInOutCubic);
     yield* all(chips[0].opacity(1, 0.3), chips[0].scale(FOLDED_SCALE, 0.5, easeOutBack));
     yield* waitFor(0.4);
@@ -314,8 +315,8 @@ export default makeScene2D(function* (view) {
     yield* all(chips[1].opacity(1, 0.3), chips[1].scale(FOLDED_SCALE, 0.5, easeOutBack));
   }
 
-  // A copy of the current "bank" dial, set aside above output column k.
-  function* park(k: number, s: Sentence) {
+  // A copy of the current "bank" dial, set aside above the output column.
+  function* park(s: Sentence, out: {node?: Node}) {
     const bank = rows[BANK].dial;
     const copy = createDial(DIAL, 1, bank.arrow.rotation());
     const node = (
@@ -325,8 +326,9 @@ export default makeScene2D(function* (view) {
       </Node>
     ) as Node;
     outLayer().add(node);
+    out.node = node;
     yield* all(
-      node.position([OUT_X[k], PARK_Y], 1.0, easeInOutCubic),
+      node.position([OUT_X[0], PARK_Y], 1.0, easeInOutCubic),
       node.scale(1.5, 1.0, easeInOutCubic),
     );
     yield* node.children()[1].opacity(1, 0.4);
@@ -365,17 +367,24 @@ export default makeScene2D(function* (view) {
   yield* attendAll(1, RIVER, range(1, 6), 2.0);
 
   yield* waitUntil('predict-1');
-  yield* predict(0, RIVER);
+  const first: {arrow?: CubicBezier; group?: Node} = {};
+  yield* predict(RIVER, first);
   yield* waitFor(1);
 
-  // --- Phase 2: same machine, side input -------------------------------------
+  // --- Phase 2: same machine, a second sentence ------------------------------
 
+  // The first sentence and its predictions move aside (left and right) and
+  // dim; the second sentence takes its place next to the machine.
   yield* waitUntil('side-input');
-  yield* park(0, RIVER);
+  const riverBank: {node?: Node} = {};
+  yield* park(RIVER, riverBank);
+  const aside = OUT_X[1] - OUT_X[0];
   yield* all(
-    ...inputs[0].map(c => c.opacity(0.35, 0.6)),
-    sequence(0.08, ...inputs[1].map(c => c.opacity(1, 0.3))),
+    first.arrow!.opacity(0, 0.5),
+    ...[first.group!, riverBank.node!].map(n => all(n.x(n.x() + aside, 1.0, easeInOutCubic), n.opacity(0.35, 1.0))),
+    ...inputs[0].map(c => all(c.x(SIDE_IN_X, 1.0, easeInOutCubic), c.opacity(0.35, 1.0))),
   );
+  yield* sequence(0.08, ...inputs[1].map(c => c.opacity(1, 0.3)));
   // Back to the entrance with the new words' dials; "bank" starts exactly as
   // before, since it is the same token.
   yield* all(
@@ -396,12 +405,13 @@ export default makeScene2D(function* (view) {
   yield* attendAll(1, MONEY, range(1, 6), 1.6);
 
   yield* waitUntil('predict-2');
-  yield* predict(1, MONEY);
+  yield* predict(MONEY, {});
   yield* waitFor(0.5);
 
-  // --- Same word, different directions --------------------------------------
+  // --- Same word, different directions: both "bank" dials side by side -----
   yield* waitUntil('compare');
-  yield* park(1, MONEY);
+  yield* park(MONEY, {});
+  yield* riverBank.node!.opacity(1, 0.5);
   yield* waitFor(3);
 });
 

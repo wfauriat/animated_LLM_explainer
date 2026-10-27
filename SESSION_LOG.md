@@ -432,6 +432,24 @@ Changes:
 
 **Length:** Scene 8 is 43.9 s; the video is 330.1 s (5 min 30 s).
 
+## 26. Scenes 5a and 6: layout tweaks
+
+**Scene 5a:**
+- While the machine shrinks (`shrink`), the output panel (Top-5, Un-embedding, Generative) fades out. A single dashed "N+1" slot fades in at the panel's centre, with a green arrow from the core.
+- Each generated token pops into the slot, then flies up into the bubble.
+
+**Scene 6:**
+- Both sentences use the input column next to the Embedding spine, and both predictions use the output column next to the block.
+- At `side-input`:
+  1. The "bank (river)" dial is parked above the output.
+  2. Then, together: the first sentence slides left (x −560 → −760) and dims to 0.35; "to / fish" and the parked dial slide right (+280) and dim; the first prediction's arrow fades.
+  3. The second sentence fades in next to the machine.
+- The second prediction now uses the same simple arrow, without the earlier dip under the first column.
+- At `compare`, the "bank (money)" dial is parked next to the machine and the "bank (river)" dial returns to full brightness, so both can be compared.
+- Scene 6 is now 50.1 s.
+
+**Length:** the video is 330.6 s (5 min 31 s).
+
 ---
 
 ## How to render the full video
