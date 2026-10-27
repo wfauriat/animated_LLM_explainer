@@ -505,6 +505,88 @@ Scene 8 now fades out at its end, so Scene 9 starts clean.
 
 **Length:** the video is 374.3 s (6 min 14 s).
 
+## 30. Scene 9: first iteration (about 40 s)
+
+User feedback and changes:
+- **Left panel, in steps:** the 4 rows are steps of an algorithm, to avoid suggesting a left-to-right flow. One at a time, each row turns its own colour (blue, teal, amber, violet) and gets a "step N" label (with ↓ arrows between labels), and the person turns one notch in that row. After step 4 the person stops, the cogs stop turning, and the panel dims to 0.4 before the right panel appears.
+  - The person steps sideways between cogs (`VISITS` holds where they stand), and the arm comes from the right shoulder so it no longer crosses the head.
+  - The tool is now an **open-end wrench** (jaws open away from the handle).
+- **Right panel:**
+  - The example line is larger (0.6) and dimmed (0.6).
+  - The order of appearance is: the two layers' cogs (between the rows), then one column of input dials on the left, then the forward pass. The dials flow through layer N−1 and layer N, and each layer nudges their arrows (by its notches). They arrive at the output and the dashed prediction slot fills with "house". This separates **what is tuned (cogs)** from **what only carries the effect (dials)**.
+  - **Error drives the notches:** the truth "coat" appears, the bracket ✗ points to a vertical **error gauge**. Each round, the gauge sends red arcs back (thicker when the error is larger). **Each notch turns at the moment the wavefront reaches it** (layer N, then N−1), with a red arc-arrow showing which way and how far. The turn size is proportional to the error. The example then re-runs (the dials go back to the input), and the gauge updates: house 90% → hat 55% → coat 6% (green ✓). Round 2 runs at 0.6× and its turns are smaller.
+  - The machine is drawn at 1.2× to fill the panel.
+- **Markers:** `by-hand`, `learning`, `predict`, `backprop`, `round-2`.
+- **User text edits kept:** "specified by hand", "data is the code (the program)", "(with automatic differentiation)".
+- **Code:** `TunableCog` now exposes `body` (the toothed wheel), so its fill can be changed.
+
+**Length:** Scene 9 is 40.1 s; the video is 394.3 s (6 min 34 s).
+
+## 31. Scene 10: first iteration (about 25 s)
+
+User feedback and changes:
+- **No prediction:** the "?" slots stay empty. At `parallel` only the "Parallel training…" text appears, now beside the problems (x = 120) instead of at the far right.
+- **Larger:** the problem chips go from 0.55 to 0.62 (rows 60 px apart), and the corner cogs go from radius 20 to 28 (72 px apart).
+- **Burst:**
+  - Everything dims, including the corner cogs.
+  - 64 flights instead of 96 (each sentence twice), spread over about 9 s instead of 6.5 s, each lasting 2.6 s instead of 1.6 s.
+  - Font size 34–45 (was 24–35), in 6 colours from the palette: blue, green, amber, lavender, cyan, pink.
+  - The sentences slow down while still on screen, and each is anchored at its outer end so it isn't cut off at the edge.
+- **Clusters:** the scene comes back to full brightness. A 4 × 3 grid of racks appears on the right (x ≈ 725), with the "massively parallelised…" text below it and the cogs underneath. The grid is no longer shown alone in the centre.
+- **Markers** with natural times: `sources` 0.4, `problems` 2.3, `parallel` 4.84, `flood` 8.14, `clusters` 20.34.
+
+**Length:** Scene 10 is 25.1 s; the video is about 396.7 s (6 min 37 s).
+
+**Full render:** `output/project.mp4`, 396.68 s, 23,801 frames, 1920×1080, 60 fps. Checked by pulling a frame from the file.
+
+## 32. Scene 10: second iteration (about 39 s), with learning rounds
+
+User decisions:
+- **New order:** sources, then the burst (all the available text), then the prediction problems and the learning rounds, then the servers ("parallelizable").
+- **Headings:**
+  - "Self-supervised learning: on gigantic amounts of texts / contexts" at the top.
+  - "sources of text" over the icons, with a 5th icon added: code.
+  - "tons of prediction problems (trillions of tokens)" over the problems.
+  - The "Parallel training…" text is removed.
+- **Problems in Scene 9's colours:**
+  - Each row is a blue prompt, then a dashed green prediction slot, then the outlined green truth chip.
+  - The first row has the column labels "prediction" and "truth (masked)" above it.
+  - 9 problems now (prefixes 1–8 and 10), with the row "…so he ▢" added.
+- **Three rounds** (markers `round-1`, `round-2`, `round-3`, paced 1, 0.8 and 0.7):
+  - All slots fill at once, with green borders when right and red when wrong.
+  - The wrong ones flash, then Scene 9's red arcs travel from the problems to the cog grid (bottom right, now radius 36). Each notch turns as the wave reaches it, with a trace arrow.
+  - The arc thickness and the turn size follow the number of wrong predictions: 6, then 4, then 1 (the one left is "and" for "so", a reasonable guess).
+  - Nothing on screen says "reasonable loss".
+- **Clusters:** a 4 × 3 grid of racks and its text appear top right, and the slow nudges of the notches resume.
+- **Shared code:**
+  - `turnNotch()` (the notch turn with its trace) moved from Scene 9 to `src/components/Cog.tsx`.
+  - `TunableCog` now has a `radius` field.
+  - `colors.error` and `colors.good` were added to the theme.
+- **Markers:** `sources` 0.4, `flood` 2.7, `problems` 14.88, `round-1` 18.72, `round-2` 24.08, `round-3` 28.74, `clusters` 33.95.
+
+**Length:** Scene 10 is 38.75 s; the video is about 410.3 s (6 min 50 s). Checked with stills; not yet rendered in full.
+
+## 33. Scene 10: third iteration (about 32 s)
+
+User feedback and changes:
+- **Headings** have more room and are capitalized: "Sources of text" (y −390, icons at −300) and "Tons of prediction problems (trillions of tokens)" (y −150). The problems start at −55, 50 px apart.
+- **The burst stays in the lower region:**
+  - It is clipped below y = −195 and centered at (0, 170).
+  - The header and sources are no longer dimmed.
+- **After the burst,** the problems appear, then the cog grid. Then (new marker `clusters`) the racks appear top right with "Distributed training on enormous clusters", before round 1.
+- **Two corrections only:**
+  - Round 1: 6 wrong, then a correction.
+  - Round 2: 4 wrong, then a correction.
+  - Round 3: the predictions show 1 wrong, and the scene ends there with no third correction. The slow-nudge loop is removed.
+- **Markers:** `sources` 0.4, `flood` 2.7, `problems` 14.2, `clusters` 17.05, `round-1` 18.85, `round-2` 24.2, `round-3` 28.85.
+- **Tool note:** while an editor tab was open, `scene10.meta` was emptied of its events (probably by the editor reloading). The markers were written back. If they vanish again, close the tab or let the editor rewrite them.
+
+**Length:** Scene 10 is 32.4 s; the video is 403.9 s (6 min 44 s). Checked with stills; not yet rendered in full.
+
+**Follow-up:** the truth chips are no longer part of each row's layout. They sit in one column (x = −95), headed by "truth (masked)".
+
+**Follow-up (distributed training):** right after the racks appear, three brackets right of the truth column group the problems: rows 1–3, 4–6 and 7–8 (the last problem, below "⋮", is not in a group). Each bracket draws a dashed cyan link to one row of racks (top, middle, bottom). This adds 1.9 s, so the round markers move to 20.75, 26.1 and 30.75. The user's text edits are kept: "Sources", "Tons of prediction problems (highly parallelizable)", "Distributed training on enormous clusters (trillions of tokens)". Scene 10 is 34.3 s; the video is about 405.8 s (6 min 46 s).
+
 ---
 
 ## How to render the full video

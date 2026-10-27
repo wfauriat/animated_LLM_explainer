@@ -6,20 +6,28 @@
       "targetTime": 0.4
     },
     {
-      "name": "problems",
-      "targetTime": 2.3
-    },
-    {
-      "name": "parallel",
-      "targetTime": 4.840000000000001
-    },
-    {
       "name": "flood",
-      "targetTime": 9.24
+      "targetTime": 2.7
+    },
+    {
+      "name": "problems",
+      "targetTime": 14.2
     },
     {
       "name": "clusters",
-      "targetTime": 17.939294704861112
+      "targetTime": 17.05
+    },
+    {
+      "name": "round-1",
+      "targetTime": 20.75
+    },
+    {
+      "name": "round-2",
+      "targetTime": 26.1
+    },
+    {
+      "name": "round-3",
+      "targetTime": 30.75
     }
   ],
   "seed": 302470543

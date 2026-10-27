@@ -1,7 +1,16 @@
 // Gear outline with trapezoidal teeth (port of scratch/wheel.py), centered
 // on the origin.
 import {Circle, Line, Node, NodeProps, Path, PathProps, Pattern} from '@motion-canvas/2d';
-import {createSignal, range, SimpleSignal, ThreadGenerator, useTime} from '@motion-canvas/core';
+import {
+  all,
+  createRef,
+  createSignal,
+  easeInOutCubic,
+  range,
+  SimpleSignal,
+  ThreadGenerator,
+  useTime,
+} from '@motion-canvas/core';
 import {colors} from '../theme';
 
 export function cogPath(
@@ -65,6 +74,8 @@ export function Cog({
 // left = slow, up = medium, right = fast.
 export interface TunableCog {
   node: Node;
+  body: Path; // the toothed wheel (its fill can be changed)
+  radius: number;
   spin: SimpleSignal<number, void>; // the teeth turning
   knob: SimpleSignal<number, void>; // the notch, -90 (left) to 90 (right)
 }
@@ -78,9 +89,10 @@ export function createTunableCog(radius: number, props: NodeProps = {}): Tunable
   const spin = createSignal(0);
   const knob = createSignal(0);
   const hub = radius * 0.46;
+  const body = createRef<Path>();
   const node = (
     <Node {...props}>
-      <Cog teeth={14} radius={radius} root={0.84} hole={0} fill={TUNABLE_FILL} rotation={spin} />
+      <Cog ref={body} teeth={14} radius={radius} root={0.84} hole={0} fill={TUNABLE_FILL} rotation={spin} />
       {range(5).map(i => (
         <Line
           rotation={-90 + i * 45}
@@ -100,7 +112,38 @@ export function createTunableCog(radius: number, props: NodeProps = {}): Tunable
       />
     </Node>
   ) as Node;
-  return {node, spin, knob};
+  return {node, body: body(), radius, spin, knob};
+}
+
+// Turns a cog's notch by `delta` (clamped to -90..90), with a trace around the
+// cog showing which way and how far. `layer` holds the trace and must share
+// the cog's coordinate space.
+export function* turnNotch(cog: TunableCog, delta: number, duration: number, layer: Node, color = colors.error) {
+  const from = cog.knob();
+  const to = Math.max(-90, Math.min(90, from + delta));
+  const trace = (
+    <Circle
+      position={cog.node.position()}
+      size={(cog.radius + 12) * 2}
+      startAngle={from - 90}
+      endAngle={() => cog.knob() - 90}
+      counterclockwise={to < from}
+      stroke={color}
+      lineWidth={5}
+      lineCap={'round'}
+      endArrow
+      arrowSize={11}
+      opacity={0}
+    />
+  ) as Circle;
+  layer.add(trace);
+  yield* all(
+    trace.opacity(1, 0.15),
+    cog.knob(to, duration, easeInOutCubic),
+    cog.node.scale(1.15, duration / 2).to(1, duration / 2),
+  );
+  yield* trace.opacity(0, 0.3);
+  trace.remove();
 }
 
 // Keeps the cogs turning, each at the speed its notch sets (run in the

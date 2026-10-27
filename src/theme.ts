@@ -72,6 +72,8 @@ export const colors = {
   dialFace: '#eef1f6',
   label: '#9aa3b2',
   attention: '#e58cf2', // Scene 6: links from earlier words
+  error: '#ff6b6b', // Scenes 9-10: wrong predictions, correction signals
+  good: '#5fd47a', // Scenes 9-10: right predictions
 };
 
 export const font = 'Inter';
