@@ -450,6 +450,61 @@ Changes:
 
 **Length:** the video is 330.6 s (5 min 31 s).
 
+**Full render:** `output/project.mp4`, 330.65 s, 19,839 frames, 1920×1080, 60 fps. Checked by pulling frames from the file.
+
+## 27. Scenes 9 and 10: brief and decisions
+
+**Scene 9:** traditional software ("set by hand") vs machine learning ("data is the code"). The machine is tuned on an example; backpropagation adjusts the last two layers.
+
+**Scene 10:** training on huge amounts of text. Sources, next-token problems solved in parallel, a burst of sentences, then computer clusters.
+
+User decisions:
+1. **Two rounds of correction,** the second faster.
+2. **The example is a small reminder line** on the right. The first prediction ("house") has already been made; the corrections only update the last two layers (no full pass through the machine).
+3. **The burst sentences are English only,** varied in topic and syntax.
+4. **The ending is the text plus a grid of servers.**
+5. **The token to predict** looks like earlier predictions (Scene 4's dashed slot filling with a green chip), distinct from the blue prompt.
+
+## 28. Scene 9: by hand vs from data (about 20 s)
+
+**Layout:** a diagonal split (divider from x −250 at the top to −430 at the bottom), with a slightly lighter left panel.
+
+**Left: "Traditional software" / "set by hand"**
+- 12 tunable cogs (3 × 4).
+- A person in 3/4 back view, in Scene 2's silhouette style:
+  - a two-segment arm (simple reach calculation, elbow always bent down);
+  - a ring wrench whose ring sits on the cog's hub and whose handle is in the hand.
+- In a loop for the whole scene, the person moves to a cog and turns the wrench, and that one notch changes. The 6 cogs within reach are visited in turn.
+
+**Right: "Machine learning" / "data is the code"**
+- An "example:" line at 0.5 scale ("It was rain ing out side so he took a" + "coat").
+- Layer N−1 cogs → a column of dials → layer N cogs → output dials → *prediction* box "house". Below it, the *truth* box "coat", joined to the prediction by a bracket with a red ✗ badge.
+- **One round** (`round()`):
+  1. Red "Wi-Fi" arcs spread from the prediction back to layer N.
+  2. Layer N's notches adjust and the output dials nudge.
+  3. Arcs spread from layer N back to layer N−1, whose notches adjust and dials nudge.
+  4. A quick forward pulse runs through the columns, left to right.
+  5. The new prediction appears.
+- **Round 1** gives "hat" ✗. **Round 2** (0.6× the time) gives "coat", with a green ✓ and green bracket.
+- A label appears with the first round: "backpropagation: correcting the error, layer by layer", with "(automatic differentiation)" below.
+- **Markers:** `by-hand`, `learning`, `backprop`, `round-2`.
+
+Scene 8 now fades out at its end, so Scene 9 starts clean.
+
+## 29. Scene 10: a mountain of text (about 23 s)
+
+**What happens:**
+1. **Sources:** four icons pop in across the top: the web (linked pages), books (a stack), blogs (a laptop with a post), news (a newspaper).
+2. **Problems:** a staircase of next-token problems: "It ▢", "It was ▢", … up to 7 words, then "⋮", then "… so he took a ▢". The prompts are blue chips at 0.55 scale; each ▢ is a dashed slot.
+3. **Parallel:** all the slots fill at once with the true next token (green). Then the right side shows "Parallel training on a gigantic amount of text and contexts" with "(trillions of token-prediction problems)".
+4. **Flood:** the rest dims to 0.15. 32 varied English sentences each fly out 3 times (96 flights) in 8 directions (with some jitter and varied sizes), accelerating over about 6.5 s.
+5. **Clusters:** 16 server racks (2 rows × 8) with blinking LEDs, and "These tasks can be massively parallelised on enormous computer clusters".
+6. **Throughout:** 12 small tunable cogs in the bottom-right corner, their notches nudged very slowly one after another.
+
+**Markers:** `sources`, `problems`, `parallel`, `flood`, `clusters`.
+
+**Length:** the video is 374.3 s (6 min 14 s).
+
 ---
 
 ## How to render the full video

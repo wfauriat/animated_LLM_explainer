@@ -1,0 +1,22 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "by-hand",
+      "targetTime": 0.4
+    },
+    {
+      "name": "learning",
+      "targetTime": 4.2
+    },
+    {
+      "name": "backprop",
+      "targetTime": 7
+    },
+    {
+      "name": "round-2",
+      "targetTime": 13.775000000000002
+    }
+  ],
+  "seed": 3075143419
+}

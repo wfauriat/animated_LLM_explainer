@@ -514,4 +514,7 @@ export default makeScene2D(function* (view) {
   yield* waitUntil('why');
   yield* all(counter().opacity(0, 0.6), summary().opacity(1, 0.8));
   yield* waitFor(4);
+
+  // Clear the stage for Scene 9.
+  yield* all(...view.children().map(c => c.opacity(0, 0.8)));
 });

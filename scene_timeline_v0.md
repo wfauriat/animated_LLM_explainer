@@ -177,6 +177,7 @@ at context, clues, facts. (as if reasoning)"
 -- Sequence / Scene 8 
 
 [sum up so far]
+(for the builder - LLM and as working memory for me)
 So far, we have shown the "inner workings" (assuming it's "built") : a machinery
 with tokenization, embedding, transformer layers (cogs) with attention (top-down
 connections between cogs), powered at remote premises, prompted via network
@@ -185,9 +186,10 @@ The user as the impression of seamless interaction with an "intelligent agent",
 but he "trigerring" a large marchinery.
 And we have show "what" that machinery produces : a very good next-token guesser, able
 to integrate the provided context and produce good answers (as if by reasoning, using
-a "model of the language"). Now let us move to how to build such machinery. 
+a "model of the language"). 
 
-On this slide, I want to illustrate the idea of scale. The next-token guesser
+[this scene]
+On this scene, I want to illustrate the idea of scale. The next-token guesser
 is somehow an "auto-completion" engine, but one with massive SCALE (say since 2019, 2020 up to now).
 Here, the idea for visualization would be to show the core of the transformation
 layers, with cogs (as the later have come to symbolize "weigths" : maybe the term
@@ -207,3 +209,54 @@ What could be written down on the scene something along the following :
 associations, situations, context to represent". Also : "the machinery has to
 account for grammar, syntax, knowledge, facts, ...". So, "any model of language,
 as "billions of knobs"".
+
+
+-- Sequence / scene 9
+
+Now that we have illustrated the machinery, made of a million of knobs [what is is,
+and what it does : good next token guesser]. Now let us talk about HOW to build
+it : through training. On this slide we will illustrate the divide between
+traditionnal software (specified, predictable, stack of functions and abstractions 
+with clear definition) and machine learning ["data is the code"]. 
+
+In the scene, a split screen (diagonal). On the left, "traditional software" (write this as 
+header), on the right "machine learning" (write it, and you may right "data is the code").
+On both the left and the right panel, a handful of cogs with notches (12 cogs).
+On the left, a caracter with its back turned to us (3/4), and a wrench, 
+"tuning" notches successively, by hand [this is the "man made" tuning].
+On the right panel, cogs "tuned automatically", on the rightmost part of the screen,
+two boxes, on for the "true observation" (say "coat"), and one for the prediction
+(say "house", a wrong prediction), a small linked connecting both with a negative tick
+(in red), emulating a poor loss [or technically, cross entropy score]. Then, in the animation,
+cogs are "auto-tuned" to correct last layer dials (a tiny bit), then moved backed to the
+N-1 layer "auto-tuned" again (simulating auto-diff and backpropagation of error).
+After tuning the cogs' notches enough, the prediction turns back to "coat", and
+the tick becomes a green positive tick. [The idea is to display that with "learning",
+the machine "tunes" "itself" on examples, not by hand]. The mechanics of last layer, then
+N-1 layer, is the illustration of back-propagation and adjustment of weights.
+Do not over-engineer, just the two last layers, a few dials, a few rotating notches,
+and the prediction vs truth self-correcting back to green tick. For "auto-tuning"
+and twisting of notches, what could be a good visualisation is that the 
+comparaison (pred vs true) sends "tuning" signals (three superimposed waves, as
+in "wifi" or "network" symbol). During this scene, the terms : traditional software,
+machine learning, exemples, should be displayed. The term backpropagation (correcting
+error, layer by layer) and auto-diff, could be displayed if there is a bit of room.
+
+
+-- Sequence / scene 10
+
+We will build on the idea of training on examples. Here in the center of the 
+screen, you should display sources of informations : the web (a web of pages with
+connections), books, blogs, newspaper (find relevent iconographies for these
+sources). That is on the upper part. On the lower part, you will display next token 
+prediction problems : It was ?? then It was rain ?? then It was rain ing ??
+and so so on (say 6 to 8 successive problem for parallel training). Pick a different
+color for the token to be predicted. You can display on the right : "parallel
+training on a gigantic amount of text and contexts (trillions of tokens prediction
+problems)." And idea, once this first set up as been visualised, would be to
+flash sentences mouving from the center and then outward (north, northeast, east,
+southeast, and so on). Differences sentences, from multiple contexts, flowing as a
+rapid pace [in order to illustrate the amount of processed problem and texts].
+You can end by displaying : "these tasks can me massively parallelise on 
+enormous computer clusters". In a corner, you can display a remainder (in small)
+of a handful (say 12) cogs nutches being very slowly adjusted and nudged. 

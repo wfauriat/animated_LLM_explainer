@@ -1,0 +1,26 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "sources",
+      "targetTime": 0.4
+    },
+    {
+      "name": "problems",
+      "targetTime": 2.3
+    },
+    {
+      "name": "parallel",
+      "targetTime": 4.840000000000001
+    },
+    {
+      "name": "flood",
+      "targetTime": 9.24
+    },
+    {
+      "name": "clusters",
+      "targetTime": 17.939294704861112
+    }
+  ],
+  "seed": 302470543
+}
