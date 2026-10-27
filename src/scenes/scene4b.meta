@@ -1,22 +1,5 @@
 {
   "version": 0,
-  "timeEvents": [
-    {
-      "name": "embedding",
-      "targetTime": 0.5
-    },
-    {
-      "name": "close-up",
-      "targetTime": 1.1
-    },
-    {
-      "name": "fold",
-      "targetTime": 9.299999999999999
-    },
-    {
-      "name": "rows",
-      "targetTime": 11.299999999999999
-    }
-  ],
+  "timeEvents": [],
   "seed": 909126764
 }

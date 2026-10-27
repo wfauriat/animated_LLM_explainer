@@ -1,0 +1,38 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "machine",
+      "targetTime": 0.3
+    },
+    {
+      "name": "x-ray",
+      "targetTime": 3.25
+    },
+    {
+      "name": "multiply",
+      "targetTime": 12.05
+    },
+    {
+      "name": "silicon",
+      "targetTime": 24.25
+    },
+    {
+      "name": "layers",
+      "targetTime": 28.25
+    },
+    {
+      "name": "scale",
+      "targetTime": 36.75
+    },
+    {
+      "name": "training",
+      "targetTime": 42.95
+    },
+    {
+      "name": "software",
+      "targetTime": 47.35
+    }
+  ],
+  "seed": 3420227453
+}

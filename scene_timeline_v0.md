@@ -264,10 +264,25 @@ of a handful (say 12) cogs nutches being very slowly adjusted and nudged.
 It should end with the screen getting dimed and the following text displayed : 
 "This process is "Pre-Training" (the P in GPT)". 
 The next block should read : what gets "tuned" => the stack of transformer (The T in GPT)
-layers (approx 2/3 of the parameter count : attention heads + Feed-Forward Networks) 
-+ the embedding table (approx 1/3 of the parameter count). 
+layers (approx 2/3 of the parameter count : attention heads + Feed-Forward Networks) + 
+the embedding table (approx 1/3 of the parameter count). 
 Check the numbers, and try to make this display quite clear and readable
 
 
 -- Sequence / scene 11
 
+For this scene, I want you to try and see what you could propose.
+So far, we have used cogs to weight in on the idea of a machine, carrying
+mechanical steps. This imagery, I feel, is good to contributed to de-anthropomorphism,
+and de-mysticise. But in fact, operation are carried out via electrons moves
+on silicium. So the scene should be used to transpose back the machinery to
+algebric manipulation of numbers on silicium. My idea would be to re-use
+scene 4 layout, but drop the cogs for numbers (matrices). In the bottom, could
+be displayed a "tensor", loaded and unloaded with new numbers, physically on
+the GPU (you may display the term), for each passing of a transformer layer.
+The goal is to convey the following idea : the scale of the machinery is only made
+possible because the operation are carried out at lightning speed on silicium,
+with specific purpose hardware (GPUs, algebra efficient), and specific purpose
+software (to orchestrate the operations, provide adapter features like auto-diff).
+This is necessary to enable scale : for training, trillions of small step nudging 
+of weights (billions of them) 

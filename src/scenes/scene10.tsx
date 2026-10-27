@@ -8,7 +8,7 @@
 // of 9. The screen then dims: this is "Pre-Training" (the P in GPT), and
 // what gets tuned is the stack of transformer layers (the T) and the
 // embedding table, in proportions compared for GPT-2 small and GPT-3.
-import {Circle, CubicBezier, Line, makeScene2D, Node, Rect, RectProps, Txt} from '@motion-canvas/2d';
+import {Circle, CubicBezier, Line, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
 import {
   all,
   chain,
@@ -25,6 +25,7 @@ import {
   waitUntil,
 } from '@motion-canvas/core';
 import {createTunableCog, driveCogs, turnNotch} from '../components/Cog';
+import {Words} from '../components/Words';
 import {colors, font} from '../theme';
 import {TOKENS} from '../scene4/layout';
 import {makeChip} from '../scene4/parts';
@@ -90,17 +91,6 @@ const BAR_X = -260;
 const BAR_W = 1000;
 const BAR_H = 60;
 const LEGEND_X = -700;
-
-// A line of words, some highlighted.
-function Words({parts, gap = 12, ...props}: {parts: [string, string?, number?][]; gap?: number} & RectProps) {
-  return (
-    <Rect layout alignItems={'baseline'} gap={gap} {...props}>
-      {parts.map(([text, fill = colors.textLight, weight = 500]) => (
-        <Txt fontFamily={font} fontSize={props.fontSize ?? 36} fontWeight={weight} fill={fill} text={text} />
-      ))}
-    </Rect>
-  );
-}
 
 // A little of everything, in English: topics and syntaxes vary.
 const SENTENCES = [
@@ -331,7 +321,7 @@ export default makeScene2D(function* (view) {
         <Txt ref={sourcesTitle} x={SECTION_X} y={SOURCES_TITLE_Y} {...heading} text={'Sources'} opacity={0} />
         {sources}
       </Node>
-      <Txt ref={problemsTitle} x={SECTION_X} y={PROBLEMS_TITLE_Y} {...heading} text={'Tons of prediction problems (highly parallelizable)'} opacity={0} />
+      <Txt ref={problemsTitle} x={SECTION_X} y={PROBLEMS_TITLE_Y} {...heading} text={'Tons of prediction problems (highly parallelizable, using masking)'} opacity={0} />
       {problems}
       {/* Column labels over the first problem (placed once laid out) */}
       <Txt ref={predLabel} offsetX={1} fontFamily={font} fontSize={22} fill={colors.label} text={'prediction'} opacity={() => problems[0].opacity()} />

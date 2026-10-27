@@ -609,6 +609,66 @@ User feedback and changes:
   4. A note: "share of the parameters: as models grow, the layers take almost all of it".
 - **Length:** Scene 10 is 48.5 s; the video is about 420 s (7 min). Checked with stills.
 
+
+## 35. Scene 11: from cogs to numbers, on silicon (first build, about 55 s)
+
+The brief (timeline): bring the cog imagery back to algebra on silicon, reusing Scene 4's layout, with a tensor on the GPU loaded with new numbers at each layer, to convey that scale needs specific-purpose hardware and software.
+
+User decisions:
+- A target of about 60 s.
+- Decimals where they read well, colour only otherwise.
+- Generic names only: "GPU", "memory", "software".
+- Keep the "by hand" comparison for now.
+- The display must stay faithful to the real transformer, for a picky audience.
+
+**11a — X-ray** (markers `machine`, `x-ray`):
+- Scene 4's layout: token chips (It, was, ⋮, took, a), the Embedding spine, dial stacks, three cog columns (layer 1, layer 2, ⋯, layer N) and the output "coat".
+- A cyan scan line sweeps left to right, done with two clipped copies of the machine. Behind the line:
+  - each dial stack becomes a row of numbers `[0.9 1.0 0.8 0.3 …]`. Each dial is one dimension, and its number is the arrow's horizontal component (cos of its angle);
+  - each cog column becomes two heat-map grids: attention (pink border) and feed-forward network (cyan border), with blue = negative and orange = positive.
+- Captions: "each dial → one number · a token → a list of numbers (a vector)" and "each notch → one number (a weight) · a layer → grids of numbers (matrices)".
+
+**11b — multiply and add** (marker `multiply`):
+- A 4 × 4 weight matrix (one-decimal values) times the vector of "It" gives the result.
+- Row 1, term by term: "0.5 × 0.9 + (−0.3) × 1.0 + 0.8 × 0.8 + 0.1 × 0.3 = 0.82". The arithmetic is computed in code, so it is exact.
+- Rows 2–4 run faster, then all rows at once, with "in parallel hardware: all the rows at the same time".
+- Captions: "Inside a layer: mostly multiplications and additions (plus a few simple functions)" and "attention: the same kind of products, between the tokens’ vectors · here 4 × 4, in large models thousands × thousands".
+
+**11c — on silicon** (markers `silicon`, `layers`):
+- The numbers machine shrinks to the top (0.55). Below it, a GPU board:
+  - a die of 200 cores ("thousands of cores");
+  - two "memory (weights)" stacks;
+  - gold traces with "electron" dots;
+  - the tensor (4 token rows × 8 numbers). Before the first layer its first 4 columns are the token vectors shown above.
+- For each layer: the layer is outlined in amber above, two weight tiles (attention, feed-forward) slide from memory into the die, the cores flicker, the electrons flow, and the tensor's numbers roll over.
+- Layers 1 and 2 are slow, "layers 3 … N−1" is a fast blur, then layer N.
+- Captions: "GPU: specific-purpose hardware, built for algebra" and "thousands of cores, each doing billions of steps per second".
+
+**11d — scale** (markers `scale`, `training`, `software`). A 0.985 veil, then:
+- "One token through a 175-billion-weight model ≈ 175 billion multiply-adds";
+- "by hand, one per second: ≈ 5,500 years";
+- "a GPU (≈ 10¹⁵ operations per second): ≈ ⅓ of a millisecond of compute";
+- "Training: ≈ 100,000 rounds of nudges, each nudging all 175 billion weights → thousands of GPUs, running for weeks";
+- "specific-purpose software orchestrates the operations (tensors, auto-diff) on specific-purpose hardware (GPUs)";
+- "Scale is only possible at lightning speed, on silicon".
+
+**Accuracy choices:**
+- A layer is shown as two kinds of matrices (attention and feed-forward), not one.
+- "Mostly multiply-add, plus a few simple functions" covers the non-linearities, normalisation and residuals.
+- The GPU is generic, with no claim that a 175 B model fits on one; layers are numbered 1, 2, …, N as in Scene 4.
+- The ⅓ ms is "of compute" at peak, not the real latency.
+- The numbers: 175 × 10⁹ s ≈ 5,545 years; 3.5 × 10¹¹ / 10¹⁵ ≈ 0.35 ms; 300 B tokens / 3.2 M per batch ≈ 94,000 steps.
+
+**Code:**
+- `src/scenes/scene11.tsx` (added to `project.ts`).
+- The `Words` helper moved to `src/components/Words.tsx` (also used by Scene 10).
+
+**Tool notes:**
+- Motion Canvas flattens only one level of nested arrays in JSX children. Use `flatMap` for grids, or nodes silently go missing.
+- A stale `.meta` written by the open editor tab cut Scene 11's holds short: it was 49.3 s instead of the natural 54.8 s. Markers with an earlier target time than the code's natural time squash later waits, so rewrite or delete a scene's `.meta` after changing its timing.
+
+**Length:** Scene 11 is 54.8 s; the video is about 474.7 s (7 min 55 s). Checked with stills; not yet rendered in full.
+
 ---
 
 ## How to render the full video
