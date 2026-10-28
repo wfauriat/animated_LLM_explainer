@@ -12,7 +12,7 @@ export const STARTS_WORD = [true, true, true, false, true, false, true, true, tr
 export const QUESTION_ROW = TOKENS.length; // the "?" slot to be predicted
 
 // Dictionary entries sorted by index (no special tokens). Includes the
-// candidate words used again by the un-embedding stage.
+// candidate words used again by the inverse lookup.
 export const DICTIONARY: [string, number][] = [
   ['.', 7], [',', 8], ['the', 9], ['of', 10], ['and', 11], ['to', 12],
   ['a', 13], ['in', 14], ['is', 15], ['that', 16], ['it', 17], ['for', 18],
@@ -108,7 +108,8 @@ export function coreAngle(r: number, k: number, steps: number) {
 }
 
 // ---------------------------------------------------------------------------
-// Output: Top-5 -> Un-embedding -> words, then the N+1 loop back to the input.
+// Output: un-embedding + softmax -> Top-5 -> inverse lookup -> words, then
+// the N+1 loop back to the input.
 
 export const TOP5 = [
   {id: 7185, p: 0.32, word: 'hat'},
@@ -121,13 +122,13 @@ export const PICKED = 1; // "coat": not the top choice
 export const OUT_ROWS_Y = [-220, -120, -20, 80, 180];
 export const OUT_ELLIPSIS_Y = 250;
 export const OUT_EXIT_X = 450; // where the last row's stack leaves the core
-// Softmax: thin vertical layer between the core and the Top-5; the last row
-// goes into it and the Top-5 comes out of it.
-export const SOFTMAX_X = 434;
-export const SOFTMAX_Y = 10;
-export const SOFTMAX_H = 560;
+// Un-embedding + softmax: thin vertical layer between the core and the Top-5;
+// the last row goes into it and the Top-5 comes out of it.
+export const UNEMBED_X = 434;
+export const UNEMBED_Y = 10;
+export const UNEMBED_H = 560;
 export const TOP5_X = 520;
-export const UNEMBED_X = 690;
+export const LOOKUP_X = 690;
 export const WORDS_X = 840;
 export const OUT_LABEL_Y = -300;
 export const N1_X = 925; // N+1 loop: down the right edge ...

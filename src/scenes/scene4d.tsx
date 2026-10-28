@@ -1,7 +1,8 @@
 // Scene 4d — From directions to the next word. Only the last row's dials
-// matter for what comes next: through the softmax layer they turn into the
-// Top-5 candidate indices with their probabilities; un-embedding maps them back to words; a "generative"
-// roulette picks one (not always the top one); N+1 appends it to the input.
+// matter for what comes next: un-embedding + softmax turns them into the Top-5
+// candidate indices with their probabilities; the dictionary, read backwards,
+// maps them back to words; a "generative" roulette picks one (not always the
+// top one); N+1 appends it to the input.
 import {makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
 import {
   all,
@@ -27,8 +28,8 @@ import {
   PICKED,
   QUESTION_ROW,
   rowY,
-  SOFTMAX_H,
-  SOFTMAX_X,
+  UNEMBED_H,
+  UNEMBED_X,
   SPINE_H,
   TOKENS_X,
   TOP5,
@@ -85,19 +86,19 @@ export default makeScene2D(function* (view) {
   );
   yield* waitFor(0.5);
 
-  // --- Softmax: a thin layer at the core's exit ---------------------------
-  yield* waitUntil('softmax');
+  // --- Un-embedding + softmax: a thin layer at the core's exit ------------
+  yield* waitUntil('unembed');
   yield* all(
-    output.softmax.height(SOFTMAX_H, 0.7, easeInOutCubic),
-    output.softmaxLabel.opacity(1, 0.7),
+    output.unembed.height(UNEMBED_H, 0.7, easeInOutCubic),
+    output.unembedLabel.opacity(1, 0.7),
   );
   yield* waitFor(0.3);
 
-  // --- The last row leaves the core and goes through the softmax ----------
+  // --- The last row leaves the core and goes through it ------------------
   yield* waitUntil('last-row');
   const last = core.rows[core.rows.length - 1];
   yield* all(
-    last.x(SOFTMAX_X, 1.2, easeInOutCubic),
+    last.x(UNEMBED_X, 1.2, easeInOutCubic),
     chain(
       waitFor(0.6),
       all(...last.dials.map(d => d.node.opacity(0, 0.6)), last.dots.opacity(0, 0.6)),
@@ -106,11 +107,11 @@ export default makeScene2D(function* (view) {
 
   // --- ... and comes out as the Top-5 -------------------------------------
   yield* waitUntil('top5');
-  const origin = new Vector2(SOFTMAX_X + 20, last.y);
+  const origin = new Vector2(UNEMBED_X + 20, last.y);
   output.entries.forEach(e => e.chip.position(origin).scale(0.3).opacity(0));
   yield* all(
     output.label.opacity(1, 0.5),
-    output.softmax.width(48, 0.25).to(40, 0.35),
+    output.unembed.width(52, 0.25).to(44, 0.35),
     sequence(
       0.12,
       ...output.entries.map((e, i) =>
@@ -134,11 +135,12 @@ export default makeScene2D(function* (view) {
   yield* output.more.opacity(1, 0.3);
   yield* waitFor(1.5);
 
-  // --- Un-embedding: indices back to words --------------------------------
-  yield* waitUntil('unembed');
+  // --- Inverse lookup: the dictionary maps indices back to words ---------
+  yield* waitUntil('lookup');
+  output.lookup.opacity(1);
   yield* all(
-    output.spine.height(SPINE_H, 0.8, easeInOutCubic),
-    output.spineLabel.opacity(1, 0.8),
+    output.lookup.height(SPINE_H, 0.8, easeInOutCubic),
+    output.lookupLabel.opacity(1, 0.8),
   );
   yield* sequence(
     0.2,

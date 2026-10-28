@@ -33,7 +33,7 @@ import {
   OUT_ROWS_Y,
   POWER_BATTERY,
   TOKENS,
-  UNEMBED_X,
+  LOOKUP_X,
 } from '../scene4/layout';
 import {createMachine} from '../scene4/Machine';
 import {makeChip, makeLabel, makeQuestionChip} from '../scene4/parts';
@@ -44,7 +44,7 @@ const BUBBLE_TOP = -470;
 const chipStyle = {width: null as null, padding: [0, 16] as [number, number]};
 const FLOW_IDLE = 0.5; // energy flow between passes (1 during a pass)
 // While generating, the output panel gives way to a single N+1 slot.
-const N1_SLOT = new Vector2(UNEMBED_X, OUT_ROWS_Y[2]);
+const N1_SLOT = new Vector2(LOOKUP_X, OUT_ROWS_Y[2]);
 
 // One token's worth of work: the columns light up in turn, the cogs and the
 // dials advance, and a surge of power flows in from the battery.

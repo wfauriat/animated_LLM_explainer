@@ -2,7 +2,7 @@
   "version": 0,
   "timeEvents": [
     {
-      "name": "softmax",
+      "name": "unembed",
       "targetTime": 0.5
     },
     {
@@ -14,7 +14,7 @@
       "targetTime": 2.7
     },
     {
-      "name": "unembed",
+      "name": "lookup",
       "targetTime": 6.58
     },
     {

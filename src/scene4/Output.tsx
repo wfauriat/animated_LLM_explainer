@@ -1,6 +1,7 @@
-// Output side of the machine: the softmax layer, Top-5 candidate indices with probabilities,
-// un-embedding back to words, the "generative" roulette that picks one, and
-// the N+1 loop that appends it to the input.
+// Output side of the machine: un-embedding + softmax (scores against every
+// token's embedding, turned into probabilities), the Top-5 candidate indices,
+// the dictionary read backwards (index -> word), the "generative" roulette that
+// picks one, and the N+1 loop that appends it to the input.
 import {Circle, CubicBezier, Line, Node, Rect, Txt} from '@motion-canvas/2d';
 import {createRef, Vector2} from '@motion-canvas/core';
 import {colors, font} from '../theme';
@@ -16,15 +17,15 @@ import {
   PICKED,
   QUESTION_ROW,
   rowY,
-  SOFTMAX_H,
-  SOFTMAX_X,
-  SOFTMAX_Y,
+  UNEMBED_H,
+  UNEMBED_X,
+  UNEMBED_Y,
   SPINE_H,
   SPINE_Y,
   TOKENS_X,
   TOP5,
   TOP5_X,
-  UNEMBED_X,
+  LOOKUP_X,
   WORDS_X,
 } from './layout';
 import {makeChip, makeLabel} from './parts';
@@ -40,13 +41,13 @@ export interface Top5Entry {
 
 export interface Output {
   node: Node;
-  softmax: Rect;
-  softmaxLabel: Txt;
+  unembed: Rect;
+  unembedLabel: Txt;
   label: Txt; // "Top-5"
   entries: Top5Entry[];
   more: Txt;
-  spine: Rect;
-  spineLabel: Txt;
+  lookup: Rect;
+  lookupLabel: Txt;
   guides: CubicBezier[];
   words: Rect[];
   genLabel: Txt; // "Generative"
@@ -58,26 +59,26 @@ export interface Output {
 // `done`: true = final state (word picked and appended), false = all hidden.
 export function createOutput(done: boolean): Output {
   const show = done ? 1 : 0;
-  const softmax = (
+  const unembed = (
     <Rect
-      x={SOFTMAX_X}
-      y={SOFTMAX_Y}
-      width={40}
-      height={done ? SOFTMAX_H : 0}
-      radius={20}
-      fill={colors.index}
+      x={UNEMBED_X}
+      y={UNEMBED_Y}
+      width={44}
+      height={done ? UNEMBED_H : 0}
+      radius={22}
+      fill={colors.embedding}
     />
   ) as Rect;
-  const softmaxLabel = (
+  const unembedLabel = (
     <Txt
-      x={SOFTMAX_X}
-      y={SOFTMAX_Y}
+      x={UNEMBED_X}
+      y={UNEMBED_Y}
       rotation={-90}
       fontFamily={font}
       fontSize={22}
       fontWeight={600}
       fill={colors.tokenText}
-      text={'Softmax'}
+      text={'Un-embedding + softmax'}
       opacity={show}
     />
   ) as Txt;
@@ -121,26 +122,29 @@ export function createOutput(done: boolean): Output {
     <Txt x={TOP5_X} y={OUT_ELLIPSIS_Y} fontFamily={font} fontSize={36} fill={colors.label} text={'⋮'} opacity={show} />
   ) as Txt;
 
-  const spine = (
+  const lookup = (
     <Rect
-      x={UNEMBED_X}
+      x={LOOKUP_X}
       y={SPINE_Y}
-      width={44}
+      width={30}
       height={done ? SPINE_H : 0}
-      radius={22}
-      fill={colors.embedding}
+      radius={15}
+      fill={colors.dictionary}
+      stroke={'#b9a56e'}
+      lineWidth={4}
+      opacity={show} // its outline would show at height 0
     />
   ) as Rect;
-  const spineLabel = (
+  const lookupLabel = (
     <Txt
-      x={UNEMBED_X}
+      x={LOOKUP_X}
       y={SPINE_Y}
       rotation={-90}
       fontFamily={font}
       fontSize={22}
       fontWeight={600}
-      fill={colors.tokenText}
-      text={'Un-embedding'}
+      fill={colors.dictionaryText}
+      text={'Dictionary (inverse lookup)'}
       opacity={show}
     />
   ) as Txt;
@@ -154,7 +158,7 @@ export function createOutput(done: boolean): Output {
         p1={from.addX(50)}
         p2={to.addX(-50)}
         p3={to}
-        stroke={colors.embedding}
+        stroke={colors.dictionary}
         lineWidth={3}
         opacity={0.7}
         end={show}
@@ -212,11 +216,11 @@ export function createOutput(done: boolean): Output {
 
   const node = (
     <Node>
-      {softmax}
-      {softmaxLabel}
+      {unembed}
+      {unembedLabel}
       {guides}
-      {spine}
-      {spineLabel}
+      {lookup}
+      {lookupLabel}
       {entries.flatMap(e => [e.bar, e.chip, e.pct])}
       {more}
       {words}
@@ -229,13 +233,13 @@ export function createOutput(done: boolean): Output {
   ) as Node;
   return {
     node,
-    softmax,
-    softmaxLabel,
+    unembed,
+    unembedLabel,
     label,
     entries,
     more,
-    spine,
-    spineLabel,
+    lookup,
+    lookupLabel,
     guides,
     words,
     genLabel,

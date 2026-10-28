@@ -751,6 +751,27 @@ User feedback and changes:
 
 **Length:** Scene 11 is 38.35 s; the video is about 457.9 s (7 min 38 s). Checked with stills.
 
+**Full render:** `output/project.mp4`, 457.87 s, 27,472 frames, 1920×1080, 60 fps. Checked by pulling a frame from the file.
+
+### 40. Scene 4 output layers: un-embedding + softmax, then inverse lookup
+
+The user pointed out an inaccuracy. In a real model, the final vector is scored against every token's embedding (un-embedding, which measures proximity in embedding space), and softmax turns those scores into probabilities. Turning the picked index back into text is just the tokenizer's dictionary read backwards. Before this change, the video called the first layer "Softmax" (cyan) and the index-to-word step "Un-embedding" (lavender).
+
+- **First layer** (between the core and the Top-5): renamed "Un-embedding + softmax" and drawn in lavender at 44 px wide, the same as the Embedding spine. Its pulse when the Top-5 comes out goes 44 → 52 → 44.
+- **Second layer** (between the Top-5 and the words): renamed "Dictionary (inverse lookup)" and drawn like the folded input Dictionary (yellow, 30 px, `#b9a56e` outline, dark text). The guides from index to word are yellow too. The spine stays hidden until it grows, because its outline would otherwise show as a dash at height 0.
+- **Code:** `SOFTMAX_X/Y/H` were renamed to `UNEMBED_X/Y/H` and the old `UNEMBED_X` to `LOOKUP_X`. In `Output`, `softmax`/`softmaxLabel` became `unembed`/`unembedLabel` and `spine`/`spineLabel` became `lookup`/`lookupLabel`. Scene 5a's N+1 slot uses `LOOKUP_X`, at the same position as before.
+- **Markers in 4d:** `softmax` was renamed `unembed`, and `unembed` was renamed `lookup`. The times are unchanged: `unembed` 0.5, `last-row` 1.5, `top5` 2.7, `lookup` 6.58, `generative` 10.53, `spin` 12.03, `pick` 18.63, `n+1` 20.93. The open editor tab rewrote `scene4d.meta` during the rename, so the times were written out in full. Reload the tab.
+
+**Length:** unchanged (Scene 4d is 27.92 s). Checked with stills of 4d and 5a.
+
+### 41. Scene 11 closing box on two lines
+
+The conclusion box is now a centred column with two lines:
+- "Scale is only possible at **lightning speed, on silicon**" (46 px, unchanged).
+- "(not mechanical gears: **yet still a machine** on silicon)" (38 px, 600 weight). "yet still a machine" is amber at 800 weight.
+
+Timing is unchanged. Checked with a still.
+
 ---
 
 ## How to render the full video

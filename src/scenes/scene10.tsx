@@ -374,7 +374,7 @@ export default makeScene2D(function* (view) {
       <Rect ref={veil} width={1920} height={1080} fill={colors.machineBg} opacity={0} />
       <Words ref={pretraining[0]} y={-410} fontSize={58} gap={18} opacity={0} parts={[['This process is'], ['“Pre-Training”', amber, 700]]} />
       <Words ref={pretraining[1]} y={-335} fontSize={36} gap={10} opacity={0} parts={[['(the', colors.textMuted], ['P', amber, 700], ['in GPT)', colors.textMuted]]} />
-      <Txt ref={tunedTitle} x={LEGEND_X} offsetX={-1} y={-215} fontFamily={font} fontSize={42} fontWeight={600} fill={colors.textLight} text={'What gets “tuned”:'} opacity={0} />
+      <Txt ref={tunedTitle} x={LEGEND_X} offsetX={-1} y={-215} fontFamily={font} fontSize={42} fontWeight={600} fill={colors.textLight} text={'Parameters getting “tuned” (in order to be a "better guesser"):'} opacity={0} />
       <Node ref={legend[0]} opacity={0}>
         <Words x={LEGEND_X + 40} offsetX={-1} y={-145} fontSize={36} gap={10} parts={[['the stack of transformer layers'], ['(the', colors.textMuted], ['T', amber, 700], ['in GPT)', colors.textMuted]]} />
       </Node>

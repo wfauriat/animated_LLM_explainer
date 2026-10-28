@@ -383,6 +383,9 @@ export default makeScene2D(function* (view) {
       <Rect
         ref={conclusion}
         layout
+        direction={'column'}
+        alignItems={'center'}
+        gap={14}
         y={300}
         padding={[28, 48]}
         radius={18}
@@ -396,7 +399,15 @@ export default makeScene2D(function* (view) {
           parts={[
             ['Scale is only possible at', colors.textLight, 700],
             ['lightning speed, on silicon', amber, 700],
-            ['(not gears)', colors.textLight, 700],
+          ]}
+        />
+        <Words
+          fontSize={38}
+          gap={10}
+          parts={[
+            ['(not mechanical gears:', colors.textLight, 600],
+            ['yet still a machine', amber, 800],
+            ['on silicon)', colors.textLight, 600],
           ]}
         />
       </Rect>
