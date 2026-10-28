@@ -723,6 +723,34 @@ User decisions:
 
 **Length:** unchanged (no timing changes). Checked with stills of 4b, 4c, 4d, 5a, 8 and 11.
 
+## 39. Scene 11: second iteration (about 37.7 s)
+
+User feedback and changes:
+- **11a, the machine:**
+  - A yellow "Tokenization" spine (the dictionary colour) now sits between the tokens and the Embedding spine.
+  - The number rows are smaller (22 px) and left-aligned at x −640; the numbers and colours are unchanged.
+  - Each layer's two matrices sit **side by side**, attention then feed-forward, with a small arrow between them. The tiles are smaller (6 × 6 cells of 16 px).
+  - Layers are at x −200, 60 and 400, and the green arrow to "coat" is shorter.
+- **Captions, with more space:** "1 token → d numbers (embedding vector)" and "many weights (gears) → weight matrix", at 34 px, 70 px apart.
+- **11b removed** (the multiply-add panel, `W`, the `multiply` marker).
+- **11c, the GPU:**
+  - The memory → cores links light up **once per layer**, a single burst while the weights load (new `loading` signal). Only the cores and the cores ↔ tensor links glitter while computing.
+  - The "layers 3 … N−1" blur is removed: layer 1, layer 2, then layer N.
+- **11d:**
+  - Cyan headers with a short underline: "Inference / prediction" and "Training".
+  - The line about specific-purpose software and GPUs is removed.
+  - The closing is a bordered amber box: "Scale is only possible at **lightning speed, on silicon** (not gears)", which pops in.
+- **Markers:** `machine`, `x-ray`, `silicon`, `layers`, `scale`, `training`, `conclusion`. `scene11.meta` was emptied, so they run at their natural times (`software` and `multiply` are gone).
+
+**Length:** Scene 11 is 37.65 s; the video is about 457.2 s (7 min 37 s). Checked with stills.
+
+**Follow-up:**
+- **Caption flashes:** after the scan, each caption appears with what it refers to. For line 1, the four vector rows are outlined in lavender and the caption turns lavender, twice. For line 2, the same happens with the three layers' matrix pairs in amber.
+- **Layout:** thin vertical separators between layers and around the "⋯". Layers moved to x −200, 70, 430 (⋯ at 250) and "coat" to 720.
+- **Dead time:** an open editor tab had written the old marker times back into `scene11.meta` (`silicon` at 24.25 s, left over from the multiply part). The markers were rewritten with the natural times: `machine` 0.3, `x-ray` 2.8, `vectors` 7.9, `matrices` 9.6, `silicon` 12.8, `layers` 16.3, `scale` 23.05, `training` 29.25, `conclusion` 33.65. The scan now takes 4.5 s and the hold before it 1.5 s.
+
+**Length:** Scene 11 is 38.35 s; the video is about 457.9 s (7 min 38 s). Checked with stills.
+
 ---
 
 ## How to render the full video

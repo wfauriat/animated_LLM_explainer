@@ -2,24 +2,19 @@
 // 11a: the machine of Scene 4 (token rows, dial stacks, columns of cogs). An
 //   X-ray line sweeps across it: each dial becomes one number (a token's
 //   stack, a vector), each layer's cogs become grids of numbers (matrices:
-//   attention and feed-forward), each notch one cell.
-// 11b: what a layer mostly does: multiply and add. A 4 x 4 weight matrix
-//   times the vector of "It", one row at a time with real arithmetic, then
-//   all rows at once.
+//   attention, then feed-forward), each notch one cell.
 // 11c: where it happens: the numbers machine above, a GPU below. For each
-//   layer, its weights stream from memory into the cores, and the tensor (the
-//   numbers being worked on) rolls over to new values.
+//   layer, its weights are loaded from memory into the cores, and the tensor
+//   (the numbers being worked on) rolls over to new values.
 // 11d: why it matters: the scale only works at the speed of silicon.
 import {Circle, Line, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
 import {
   all,
-  chain,
   createRef,
   createSignal,
   easeInOutCubic,
   easeOutCubic,
   linear,
-  makeRef,
   range,
   sequence,
   Vector2,
@@ -58,39 +53,32 @@ function rnd(a: number, b: number, c = 0) {
 
 const ROW_TOKENS = [0, 1, 8, 9]; // It, was, took, a
 const ROWS_Y = [-220, -100, 100, 220];
-const TOKEN_X = -830;
-const EMBED_X = -730;
-const VEC_X = -520; // the token vectors: dial stacks, then numbers
+const TOKEN_X = -850;
+const DICT_X = -760; // tokenization (dictionary lookup)
+const EMBED_X = -690;
+const VEC_X = -490; // the token vectors: dial stacks (front dial) ...
+const VEC_LEFT = -640; // ... then rows of numbers, from here
 const DIMS = 4;
 const LAYERS = [
-  {x: -170, label: 'layer 1'},
-  {x: 40, label: 'layer 2'},
-  {x: 380, label: 'layer N'},
+  {x: -200, label: 'layer 1'},
+  {x: 70, label: 'layer 2'},
+  {x: 430, label: 'layer N'},
 ];
-const MORE_X = 210;
+const MORE_X = 250;
+// Thin separators between layers (and around the "⋯").
+const SEPARATORS_X = [-65, 205, 295];
 const COG_Y = [-280, -160, 0, 160, 280];
-const OUT_X = 690;
+const OUT_X = 720;
+// Each layer: attention, then feed-forward, side by side.
 const TILE_N = 6;
-const TILE_CELL = 24;
-const TILE_Y = [-95, 95]; // attention, feed-forward
+const TILE_CELL = 16;
+const TILE_DX = [-64, 64];
 const TILE_COLORS = [colors.attention, colors.index];
+const TILE_HALF = (TILE_N * TILE_CELL + 10) / 2;
+const SCAN_FROM = -660;
+const SCAN_TO = 640;
 // Each dial is one dimension; its number is the arrow's horizontal component.
 const VECTORS = ROW_TOKENS.map(t => range(DIMS).map(k => round1(Math.cos((embeddingAngle(IDS[t], k) * Math.PI) / 180))));
-
-// --- 11b: one matrix times one vector ---------------------------------------------
-
-const W = [
-  [0.5, -0.3, 0.8, 0.1],
-  [-0.6, 0.2, 0.3, 0.7],
-  [0.1, 0.9, -0.4, 0.2],
-  [0.7, 0.4, 0.1, -0.5],
-];
-const X_VEC = VECTORS[0]; // the vector of "It"
-const Y_VEC = W.map(row => row.reduce((s, w, j) => s + w * X_VEC[j], 0));
-const W_X = (j: number) => -330 + j * 100;
-const M_Y = (i: number) => -150 + i * 80;
-const X_COL = 130;
-const Y_COL = 350;
 
 // --- 11c: the GPU -------------------------------------------------------------------
 
@@ -100,12 +88,6 @@ const DIE = {x: 0, y: 112, w: 420, h: 220};
 const MEM_X = 370;
 const CORES = {cols: 20, rows: 10, pitch: 19, size: 14};
 const TENSOR = {x: 40, y: 320, cols: 8, w: 62, h: 28};
-const PASSES = [
-  {x: LAYERS[0].x, text: 'layer 1'},
-  {x: LAYERS[1].x, text: 'layer 2'},
-  {x: MORE_X, text: 'layers 3 … N−1'},
-  {x: LAYERS[2].x, text: 'layer N'},
-];
 
 export default makeScene2D(function* (view) {
   view.fill(colors.machineBg);
@@ -114,10 +96,12 @@ export default makeScene2D(function* (view) {
 
   // --- The machine: shared parts, the cog side, the number side ------------------
   const machine = createRef<Node>();
-  const scan = createSignal(-700);
+  const scan = createSignal(SCAN_FROM);
   const scanLine = createRef<Node>();
   const captions = [createRef<Txt>(), createRef<Txt>()];
   const highlight = createRef<Rect>();
+  const vecBoxes: Rect[] = [];
+  const matBoxes: Rect[] = [];
 
   const stacks = ROW_TOKENS.map(t =>
     createCompassStack({
@@ -135,17 +119,18 @@ export default makeScene2D(function* (view) {
     }),
   );
   // Like the dials: the first dimensions, "…", then the last one.
+  const rows: Rect[] = [];
   const vectorRow = (vals: number[], props = {}) => {
     const num = (v: number) => (
-      <Txt width={64} textAlign={'center'} fontFamily={font} fontSize={28} fill={v < 0 ? NEG : POS} text={fmt(v)} />
+      <Txt width={50} textAlign={'center'} fontFamily={font} fontSize={22} fill={v < 0 ? NEG : POS} text={fmt(v)} />
     );
     return (
-      <Rect layout alignItems={'center'} gap={4} {...props}>
-        <Txt fontFamily={font} fontSize={40} fill={colors.label} text={'['} />
+      <Rect ref={r => r && rows.push(r)} layout alignItems={'center'} gap={4} offsetX={-1} {...props}>
+        <Txt fontFamily={font} fontSize={32} fill={colors.label} text={'['} />
         {vals.slice(0, -1).map(num)}
-        <Txt marginLeft={6} marginRight={6} fontFamily={font} fontSize={28} fill={colors.label} text={'…'} />
+        <Txt marginLeft={4} marginRight={4} fontFamily={font} fontSize={22} fill={colors.label} text={'…'} />
         {num(vals[vals.length - 1])}
-        <Txt fontFamily={font} fontSize={40} fill={colors.label} text={']'} />
+        <Txt fontFamily={font} fontSize={32} fill={colors.label} text={']'} />
       </Rect>
     );
   };
@@ -174,9 +159,24 @@ export default makeScene2D(function* (view) {
   );
   const numSide = (
     <Node>
-      {VECTORS.map((v, r) => vectorRow(v, {x: VEC_X + 30, y: ROWS_Y[r]}))}
-      {LAYERS.flatMap((l, li) => TILE_Y.map((y, t) => <Node position={[l.x, y]}>{tile(li, t, TILE_COLORS[t])}</Node>))}
-      <Rect layout alignItems={'center'} gap={10} x={110} y={300}>
+      {VECTORS.map((v, r) => vectorRow(v, {x: VEC_LEFT, y: ROWS_Y[r]}))}
+      {LAYERS.map((l, li) => (
+        <Node x={l.x}>
+          {TILE_DX.map((dx, t) => <Node x={dx}>{tile(li, t, TILE_COLORS[t])}</Node>)}
+          {/* attention first, then feed-forward */}
+          <Line
+            points={[[TILE_DX[0] + TILE_HALF + 3, 0], [TILE_DX[1] - TILE_HALF - 3, 0]]}
+            stroke={colors.label}
+            lineWidth={3}
+            endArrow
+            arrowSize={7}
+          />
+        </Node>
+      ))}
+      {SEPARATORS_X.map(x => (
+        <Line points={[[x, -85], [x, 85]]} stroke={colors.label} lineWidth={2} opacity={0.5} />
+      ))}
+      <Rect layout alignItems={'center'} gap={10} x={110} y={120}>
         {swatch(colors.attention)}
         <Txt {...small} text={'attention'} marginRight={20} />
         {swatch(colors.index)}
@@ -189,11 +189,13 @@ export default makeScene2D(function* (view) {
     <Node ref={machine} opacity={0}>
       {ROW_TOKENS.map((t, r) => makeChip(TOKENS[t], colors.token, {x: TOKEN_X, y: ROWS_Y[r], scale: 0.7}))}
       <Txt x={TOKEN_X} y={0} fontFamily={font} fontSize={36} fill={colors.label} text={'⋮'} />
+      <Rect x={DICT_X} y={0} width={36} height={560} radius={18} fill={colors.dictionary} />
+      <Txt x={DICT_X} rotation={-90} fontFamily={font} fontSize={20} fontWeight={600} fill={colors.dictionaryText} text={'Tokenization'} />
       <Rect x={EMBED_X} y={0} width={36} height={560} radius={18} fill={colors.embedding} />
       <Txt x={EMBED_X} rotation={-90} fontFamily={font} fontSize={20} fontWeight={600} fill={colors.tokenText} text={'Embedding'} />
       {LAYERS.map(l => <Txt {...small} x={l.x} y={-345} text={l.label} />)}
       <Txt x={MORE_X} y={0} fontFamily={font} fontSize={44} fill={colors.label} text={'⋯'} />
-      <Line points={[[LAYERS[2].x + 100, 0], [OUT_X - 75, 0]]} stroke={colors.flowOut} lineWidth={3} endArrow arrowSize={10} />
+      <Line points={[[LAYERS[2].x + 135, 0], [OUT_X - 75, 0]]} stroke={colors.flowOut} lineWidth={3} endArrow arrowSize={10} />
       {makeChip('coat', colors.botBubble, {x: OUT_X, y: 0, scale: 0.8})}
       {/* Left of the scan line: numbers. Right of it: cogs. */}
       <Rect clip x={() => (scan() - 960) / 2} width={() => scan() + 960} height={1080}>
@@ -206,69 +208,46 @@ export default makeScene2D(function* (view) {
         <Rect width={44} height={760} fill={colors.index} opacity={0.12} />
         <Rect width={5} height={760} fill={colors.index} />
       </Node>
-      <Rect ref={highlight} y={-10} width={200} height={470} radius={16} stroke={amber} lineWidth={6} opacity={0} />
+      {/* Flashed to match the captions: token vectors, then weight matrices */}
+      {ROWS_Y.map((y, r) => (
+        <Rect
+          ref={b => b && vecBoxes.push(b)}
+          x={() => VEC_LEFT + (rows[r]?.width() ?? 0) / 2}
+          y={y}
+          width={() => (rows[r]?.width() ?? 0) + 20}
+          height={48}
+          radius={10}
+          stroke={colors.embedding}
+          lineWidth={4}
+          opacity={0}
+        />
+      ))}
+      {LAYERS.map(l => (
+        <Rect
+          ref={b => b && matBoxes.push(b)}
+          x={l.x}
+          width={2 * (TILE_DX[1] + TILE_HALF) + 16}
+          height={2 * TILE_HALF + 16}
+          radius={10}
+          stroke={amber}
+          lineWidth={4}
+          opacity={0}
+        />
+      ))}
+      <Rect ref={highlight} width={2 * (TILE_DX[1] + TILE_HALF) + 30} height={2 * TILE_HALF + 34} radius={16} stroke={amber} lineWidth={6} opacity={0} />
     </Node>,
   );
   view.add(
     <>
-      <Txt ref={captions[0]} y={395} fontFamily={font} fontSize={32} fill={colors.textLight} opacity={0} text={'each dial → one number  ·  a token → a list of numbers (a vector)'} />
-      <Txt ref={captions[1]} y={445} fontFamily={font} fontSize={32} fill={colors.textLight} opacity={0} text={'each notch → one number (a weight)  ·  a layer → grids of numbers (matrices)'} />
+      <Txt ref={captions[0]} y={395} fontFamily={font} fontSize={34} fill={colors.textLight} opacity={0} text={'1 token → d numbers (embedding vector)'} />
+      <Txt ref={captions[1]} y={465} fontFamily={font} fontSize={34} fill={colors.textLight} opacity={0} text={'many weights (gears) → weight matrix'} />
     </>,
-  );
-
-  // --- 11b: the matrix panel ----------------------------------------------------------
-  const panel = createRef<Node>();
-  const wCells = W.map(() => [] as Rect[]);
-  const xCol = createRef<Node>();
-  const yTexts = W.map(() => createRef<Txt>());
-  const rowBoxes = W.map(() => createRef<Rect>());
-  const equation = createRef<Txt>();
-  const parallel = createRef<Txt>();
-  const panelCaptions = [createRef<Txt>(), createRef<Txt>()];
-  const column = (x: number, children: Node[] | Node, label: string) => (
-    <Node>
-      <Txt {...small} x={x} y={M_Y(0) - 75} text={label} />
-      <Rect x={x} y={(M_Y(0) + M_Y(3)) / 2} width={110} height={340} radius={12} stroke={colors.label} lineWidth={2} />
-      {children}
-    </Node>
-  );
-  view.add(
-    <Node ref={panel} opacity={0}>
-      <Txt {...small} x={(W_X(0) + W_X(3)) / 2} y={M_Y(0) - 75} text={'weights of a layer (a matrix)'} />
-      {W.flatMap((row, i) =>
-        row.map((w, j) => (
-          <Rect ref={makeRef(wCells[i], j)} x={W_X(j)} y={M_Y(i)} width={92} height={70} radius={8} fill={mix(ZERO, w < 0 ? NEG : POS, Math.abs(w) * 0.8)}>
-            <Txt fontFamily={font} fontSize={32} fill={colors.textLight} text={fmt(w)} />
-          </Rect>
-        )),
-      )}
-      {W.map((_, i) => (
-        <Rect ref={rowBoxes[i]} x={(W_X(0) + W_X(3)) / 2} y={M_Y(i)} width={412} height={80} radius={10} stroke={amber} lineWidth={4} opacity={0} />
-      ))}
-      <Txt x={(W_X(3) + X_COL) / 2 + 20} y={(M_Y(0) + M_Y(3)) / 2} fontFamily={font} fontSize={44} fill={colors.label} text={'×'} />
-      <Node ref={xCol}>
-        {column(
-          X_COL,
-          X_VEC.map((v, i) => <Txt x={X_COL} y={M_Y(i)} fontFamily={font} fontSize={32} fill={v < 0 ? NEG : POS} text={fmt(v)} />),
-          'vector of “It”',
-        )}
-      </Node>
-      <Txt x={(X_COL + Y_COL) / 2} y={(M_Y(0) + M_Y(3)) / 2} fontFamily={font} fontSize={44} fill={colors.label} text={'='} />
-      {column(
-        Y_COL,
-        Y_VEC.map((v, i) => <Txt ref={yTexts[i]} x={Y_COL} y={M_Y(i)} fontFamily={font} fontSize={32} fontWeight={600} fill={amber} text={fmt(v, 2)} opacity={0} />),
-        'result',
-      )}
-      <Txt ref={equation} y={210} fontFamily={font} fontSize={32} fill={colors.textLight} text={''} />
-      <Txt ref={parallel} y={210} fontFamily={font} fontSize={32} fontWeight={600} fill={amber} text={'in parallel hardware: all the rows at the same time'} opacity={0} />
-      <Txt ref={panelCaptions[0]} y={330} fontFamily={font} fontSize={34} fontWeight={600} fill={colors.textLight} opacity={0} text={'Inside a layer: mostly multiplications and additions (plus a few simple functions)'} />
-      <Txt ref={panelCaptions[1]} y={385} fontFamily={font} fontSize={28} fill={colors.textMuted} opacity={0} text={'attention: the same kind of products, between the tokens’ vectors  ·  here 4 × 4, in large models thousands × thousands'} />
-    </Node>,
   );
 
   // --- 11c: the GPU board -------------------------------------------------------------
   const gpu = createRef<Node>();
-  const activity = createSignal(0);
+  const loading = createSignal(0); // weights travelling from memory to the cores
+  const activity = createSignal(0); // the cores computing
   const tensorState = createSignal(0);
   const status = createRef<Txt>();
   const gpuCaptions = [createRef<Txt>(), createRef<Txt>()];
@@ -278,11 +257,12 @@ export default makeScene2D(function* (view) {
       DIE.x + ((c % CORES.cols) - (CORES.cols - 1) / 2) * CORES.pitch,
       DIE.y + (Math.floor(c / CORES.cols) - (CORES.rows - 1) / 2) * CORES.pitch,
     );
-  const segments: [Vector2, Vector2][] = [
-    [new Vector2(-MEM_X + 65, DIE.y), new Vector2(-DIE.w / 2, DIE.y)],
-    [new Vector2(MEM_X - 65, DIE.y), new Vector2(DIE.w / 2, DIE.y)],
-    [new Vector2(-60, TENSOR.y - 2 * TENSOR.h), new Vector2(-60, DIE.y + DIE.h / 2)],
-    [new Vector2(60, DIE.y + DIE.h / 2), new Vector2(60, TENSOR.y - 2 * TENSOR.h)],
+  // Memory -> cores (lit while loading), cores <-> tensor (lit while computing).
+  const segments: [Vector2, Vector2, typeof loading][] = [
+    [new Vector2(-MEM_X + 65, DIE.y), new Vector2(-DIE.w / 2, DIE.y), loading],
+    [new Vector2(MEM_X - 65, DIE.y), new Vector2(DIE.w / 2, DIE.y), loading],
+    [new Vector2(-60, TENSOR.y - 2 * TENSOR.h), new Vector2(-60, DIE.y + DIE.h / 2), activity],
+    [new Vector2(60, DIE.y + DIE.h / 2), new Vector2(60, TENSOR.y - 2 * TENSOR.h), activity],
   ];
   // Columns: the first dimensions, "…", then the last one. Before the first
   // layer, the tensor holds the token vectors shown above (first 3 and last).
@@ -307,7 +287,7 @@ export default makeScene2D(function* (view) {
     <Node ref={gpu} opacity={0}>
       <Rect x={BOARD.x} y={BOARD.y} width={BOARD.w} height={BOARD.h} radius={16} fill={'#13281d'} stroke={colors.pcbEdge} lineWidth={3} />
       <Txt x={BOARD.x - BOARD.w / 2 + 24} y={BOARD.y + BOARD.h / 2 - 32} offsetX={-1} fontFamily={font} fontSize={34} fontWeight={600} fill={colors.textLight} text={'GPU'} />
-      {segments.map(([a, b]) => <Line points={[a, b]} stroke={'#b08d3a'} lineWidth={4} opacity={0.6} />)}
+      {segments.map(([a, b, lit]) => <Line points={[a, b]} stroke={'#b08d3a'} lineWidth={4} opacity={() => 0.6 + 0.4 * lit()} />)}
       {memory(-MEM_X)}
       {memory(MEM_X)}
       <Rect x={DIE.x} y={DIE.y} width={DIE.w} height={DIE.h} radius={8} fill={'#11151c'} stroke={colors.steel} lineWidth={3} />
@@ -322,13 +302,13 @@ export default makeScene2D(function* (view) {
         />
       ))}
       <Txt {...small} fontSize={22} x={DIE.x} y={DIE.y - DIE.h / 2 - 14} text={'thousands of cores'} />
-      {/* Electrons along the traces, while the chip works */}
-      {segments.flatMap(([a, b]) =>
+      {/* Electrons along the traces */}
+      {segments.flatMap(([a, b, lit]) =>
         range(4).map(i => (
           <Circle
             size={8}
             fill={'#ffe08a'}
-            opacity={activity}
+            opacity={lit}
             position={() => {
               const f = (clock() * 1.6 + i / 4) % 1;
               return a.add(b.sub(a).scale(f));
@@ -371,34 +351,55 @@ export default makeScene2D(function* (view) {
 
   // --- 11d: scale ------------------------------------------------------------------
   const veil = createRef<Rect>();
-  const lines = range(8).map(() => createRef<Node>());
+  const header = (text: string, y: number) => (
+    <Node y={y}>
+      <Txt fontFamily={font} fontSize={50} fontWeight={700} fill={colors.index} text={text} />
+      <Rect y={46} width={90} height={5} radius={3} fill={colors.index} />
+    </Node>
+  );
+  const lines = range(6).map(() => createRef<Node>());
+  const conclusion = createRef<Rect>();
   view.add(
     <>
       <Rect ref={veil} width={1920} height={1080} fill={colors.machineBg} opacity={0} />
       <Node ref={lines[0]} opacity={0}>
-        <Txt y={-400} fontFamily={font} fontSize={40} fontWeight={600} fill={colors.textLight} text={'One token through a 175-billion-weight model'} />
-        <Txt y={-345} fontFamily={font} fontSize={30} fill={colors.textMuted} text={'≈ 175 billion multiply-adds'} />
+        {header('Inference / prediction', -440)}
+        <Txt y={-345} fontFamily={font} fontSize={38} fontWeight={600} fill={colors.textLight} text={'One token through a 175-billion-weight model'} />
+        <Txt y={-295} fontFamily={font} fontSize={30} fill={colors.textMuted} text={'≈ 175 billion multiply-adds'} />
       </Node>
       <Node ref={lines[1]} opacity={0}>
-        <Words y={-265} fontSize={34} parts={[['by hand, one per second:'], ['≈ 5,500 years', amber, 600]]} />
+        <Words y={-225} fontSize={34} parts={[['by hand, one per second:'], ['≈ 5,500 years', amber, 600]]} />
       </Node>
       <Node ref={lines[2]} opacity={0}>
-        <Words y={-205} fontSize={34} parts={[['a GPU (≈ 10¹⁵ operations per second):'], ['≈ ⅓ of a millisecond of compute', amber, 600]]} />
+        <Words y={-170} fontSize={34} parts={[['a GPU (≈ 10¹⁵ operations per second):'], ['≈ ⅓ of a millisecond of compute', amber, 600]]} />
       </Node>
       <Node ref={lines[3]} opacity={0}>
-        <Txt y={-80} fontFamily={font} fontSize={40} fontWeight={600} fill={colors.textLight} text={'Training'} />
-        <Txt y={-25} fontFamily={font} fontSize={30} fill={colors.textMuted} text={'≈ 100,000 rounds of nudges, each nudging all 175 billion weights'} />
+        {header('Training', -50)}
+        <Txt y={45} fontFamily={font} fontSize={34} fill={colors.textLight} text={'≈ 100,000 rounds of nudges, each nudging all 175 billion weights'} />
       </Node>
       <Node ref={lines[4]} opacity={0}>
-        <Txt y={45} fontFamily={font} fontSize={34} fontWeight={600} fill={amber} text={'→ thousands of GPUs, running for weeks'} />
+        <Txt y={100} fontFamily={font} fontSize={34} fontWeight={600} fill={amber} text={'→ thousands of GPUs, running for weeks'} />
       </Node>
-      <Node ref={lines[5]} opacity={0}>
-        <Txt y={175} fontFamily={font} fontSize={30} fill={colors.textLight} text={'specific-purpose software orchestrates the operations (tensors, auto-diff)'} />
-        <Txt y={220} fontFamily={font} fontSize={30} fill={colors.textLight} text={'on specific-purpose hardware (GPUs)'} />
-      </Node>
-      <Node ref={lines[6]} opacity={0}>
-        <Txt y={350} fontFamily={font} fontSize={44} fontWeight={600} fill={colors.textLight} text={'Scale is only possible at lightning speed, on silicon'} />
-      </Node>
+      <Rect
+        ref={conclusion}
+        layout
+        y={300}
+        padding={[28, 48]}
+        radius={18}
+        fill={'#1a1608'}
+        stroke={amber}
+        lineWidth={4}
+        opacity={0}
+      >
+        <Words
+          fontSize={46}
+          parts={[
+            ['Scale is only possible at', colors.textLight, 700],
+            ['lightning speed, on silicon', amber, 700],
+            ['(not gears)', colors.textLight, 700],
+          ]}
+        />
+      </Rect>
     </>,
   );
 
@@ -407,80 +408,58 @@ export default makeScene2D(function* (view) {
 
   // --- Helpers -------------------------------------------------------------------------
 
-  // One pass through a layer (or the fast-forward through many): the layer is
-  // outlined above; below, its weights stream from memory into the cores and
-  // the tensor rolls over to new values.
-  function* pass(k: number, pace: number) {
-    const p = PASSES[k];
-    status().text(p.text);
-    yield* all(highlight().x(p.x, 0.3 * pace, easeInOutCubic), highlight().opacity(1, 0.2));
+  // One pass through a layer: the layer is outlined above; below, its weights
+  // are loaded from memory into the cores (one burst along the links), then
+  // the cores compute and the tensor rolls over to new values.
+  function* pass(l: number, pace: number) {
+    status().text(LAYERS[l].label);
+    yield* all(highlight().x(LAYERS[l].x, 0.3 * pace, easeInOutCubic), highlight().opacity(1, 0.2));
     const tiles = [-1, 1].map(side => {
-      const t = (<Node position={[side * MEM_X, DIE.y]} scale={0.5}>{tile(k, side, side < 0 ? colors.attention : colors.index, 4, 20)}</Node>) as Node;
+      const t = (<Node position={[side * MEM_X, DIE.y]} scale={0.5}>{tile(l, side, side < 0 ? colors.attention : colors.index, 4, 20)}</Node>) as Node;
       flying().add(t);
       return t;
     });
-    yield* all(...tiles.map(t => all(t.position([0, DIE.y], 0.4 * pace, easeInOutCubic), t.opacity(0, 0.4 * pace, easeInOutCubic))));
+    yield* all(
+      loading(1, 0.1 * pace).to(0, 0.35 * pace),
+      ...tiles.map(t => all(t.position([0, DIE.y], 0.4 * pace, easeInOutCubic), t.opacity(0, 0.4 * pace, easeInOutCubic))),
+    );
     tiles.forEach(t => t.remove());
     yield* all(activity(1, 0.15), tensorState(tensorState() + 1, 0.7 * pace, linear));
     yield* activity(0, 0.2 * pace);
+  }
+
+  // Outlines `boxes` and tints `caption` with the same color, twice.
+  function* flash(boxes: Rect[], caption: Txt, color: string) {
+    for (let i = 0; i < 2; i++) {
+      yield* all(...boxes.map(b => b.opacity(1, 0.25)), caption.fill(color, 0.25));
+      yield* all(...boxes.map(b => b.opacity(0, 0.35)), caption.fill(colors.textLight, 0.35));
+    }
   }
 
   // --- 11a: the machine, then numbers ---------------------------------------------------
   yield* waitFor(0.3);
   yield* waitUntil('machine');
   yield* machine().opacity(1, 1);
-  yield* waitFor(2);
+  yield* waitFor(1.5);
 
   yield* waitUntil('x-ray');
-  const scanTime = 5;
-  const reach = (x: number) => ((x + 120 - -700) / (620 - -700)) * scanTime;
-  yield* all(
-    scanLine().opacity(1, 0.3),
-    scan(620, scanTime, linear),
-    chain(waitFor(reach(VEC_X)), captions[0]().opacity(1, 0.5)),
-    chain(waitFor(reach(LAYERS[0].x)), captions[1]().opacity(1, 0.5)),
-  );
+  yield* all(scanLine().opacity(1, 0.3), scan(SCAN_TO, 4.5, linear));
   yield* scanLine().opacity(0, 0.3);
   scan(960);
-  yield* waitFor(3.5);
+  yield* waitFor(0.3);
 
-  // --- 11b: multiply and add -----------------------------------------------------------
-  yield* waitUntil('multiply');
-  yield* all(machine().opacity(0, 0.6), ...captions.map(c => c().opacity(0, 0.4)), panel().opacity(1, 0.6));
-  yield* waitFor(0.6);
-  // Row 1, slowly: four products, then their sum.
-  yield* rowBoxes[0]().opacity(1, 0.3);
-  const terms = W[0].map((w, j) => `${w < 0 ? `(${fmt(w)})` : fmt(w)} × ${X_VEC[j] < 0 ? `(${fmt(X_VEC[j])})` : fmt(X_VEC[j])}`);
-  for (let j = 0; j < 4; j++) {
-    equation().text(terms.slice(0, j + 1).join(' + '));
-    yield* all(wCells[0][j].scale(1.12, 0.2).to(1, 0.25));
-  }
-  equation().text(terms.join(' + ') + ` = ${fmt(Y_VEC[0], 2)}`);
-  yield* yTexts[0]().opacity(1, 0.4);
-  yield* waitFor(0.8);
-  // The other rows, faster.
-  for (let i = 1; i < 4; i++) {
-    yield* all(rowBoxes[i - 1]().opacity(0, 0.15), rowBoxes[i]().opacity(1, 0.15));
-    equation().text(
-      W[i].map((w, j) => `${w < 0 ? `(${fmt(w)})` : fmt(w)} × ${X_VEC[j] < 0 ? `(${fmt(X_VEC[j])})` : fmt(X_VEC[j])}`).join(' + ') +
-        ` = ${fmt(Y_VEC[i], 2)}`,
-    );
-    yield* yTexts[i]().opacity(1, 0.3);
-    yield* waitFor(0.25);
-  }
-  // All rows at once.
-  yield* all(rowBoxes[3]().opacity(0, 0.2), equation().opacity(0, 0.2), ...yTexts.map(t => t().opacity(0, 0.2)));
-  yield* all(...rowBoxes.map(b => b().opacity(1, 0.3)), parallel().opacity(1, 0.3));
-  yield* all(...yTexts.map(t => t().opacity(1, 0.3)));
+  // Each caption with what it refers to.
+  yield* waitUntil('vectors');
+  yield* all(captions[0]().opacity(1, 0.4), flash(vecBoxes, captions[0](), colors.embedding));
   yield* waitFor(0.5);
-  yield* sequence(0.6, ...panelCaptions.map(c => c().opacity(1, 0.5)));
-  yield* waitFor(3.2);
+  yield* waitUntil('matrices');
+  yield* all(captions[1]().opacity(1, 0.4), flash(matBoxes, captions[1](), amber));
+  yield* waitFor(2);
 
   // --- 11c: on silicon --------------------------------------------------------------------
   yield* waitUntil('silicon');
-  yield* panel().opacity(0, 0.5);
   yield* all(
-    machine().opacity(1, 0.8),
+    ...captions.map(c => c().opacity(0, 0.4)),
     machine().position(MACHINE_TOP.position, 0.9, easeInOutCubic),
     machine().scale(MACHINE_TOP.scale, 0.9, easeInOutCubic),
     gpu().opacity(1, 0.9),
@@ -491,12 +470,7 @@ export default makeScene2D(function* (view) {
   yield* waitUntil('layers');
   yield* pass(0, 1.2);
   yield* pass(1, 1);
-  // Many layers in a blur.
-  status().text(PASSES[2].text);
-  yield* all(highlight().x(PASSES[2].x, 0.25, easeInOutCubic), activity(1, 0.15));
-  yield* tensorState(tensorState() + 6, 1.6, linear);
-  yield* activity(0, 0.15);
-  yield* pass(3, 0.7);
+  yield* pass(2, 0.8);
   yield* all(highlight().opacity(0, 0.3), status().opacity(0, 0.3));
   yield* waitFor(1.5);
 
@@ -516,9 +490,8 @@ export default makeScene2D(function* (view) {
   yield* lines[4]().opacity(1, 0.5);
   yield* waitFor(2.2);
 
-  yield* waitUntil('software');
-  yield* lines[5]().opacity(1, 0.6);
-  yield* waitFor(2.2);
-  yield* lines[6]().opacity(1, 0.6);
+  yield* waitUntil('conclusion');
+  conclusion().scale(0.9);
+  yield* all(conclusion().opacity(1, 0.6), conclusion().scale(1, 0.7, easeOutCubic));
   yield* waitFor(4);
 });

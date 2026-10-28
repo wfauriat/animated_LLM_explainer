@@ -7,31 +7,35 @@
     },
     {
       "name": "x-ray",
-      "targetTime": 3.25
+      "targetTime": 2.8
     },
     {
-      "name": "multiply",
-      "targetTime": 12.05
+      "name": "vectors",
+      "targetTime": 7.9
+    },
+    {
+      "name": "matrices",
+      "targetTime": 9.6
     },
     {
       "name": "silicon",
-      "targetTime": 24.25
+      "targetTime": 12.8
     },
     {
       "name": "layers",
-      "targetTime": 28.25
+      "targetTime": 16.3
     },
     {
       "name": "scale",
-      "targetTime": 36.75
+      "targetTime": 23.05
     },
     {
       "name": "training",
-      "targetTime": 42.95
+      "targetTime": 29.25
     },
     {
-      "name": "software",
-      "targetTime": 47.35
+      "name": "conclusion",
+      "targetTime": 33.65
     }
   ],
   "seed": 3420227453
