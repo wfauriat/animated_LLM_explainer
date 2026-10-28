@@ -13,8 +13,8 @@ import {
   FOLDED_SCALE,
   INDEX_X,
   LAYER_X,
-  OUT_EXIT_X,
   rowY,
+  SOFTMAX_X,
   SPINE_H,
   SPINE_Y,
   STEPS,
@@ -71,9 +71,9 @@ export function createMachine(stage: Stage): Machine {
     guides.forEach(g => g.opacity(0.3));
   }
   if (stage === '5a') {
-    // The last row has left the core to become the Top-5.
+    // The last row has gone through the softmax to become the Top-5.
     const last = core.rows[core.rows.length - 1];
-    last.x(OUT_EXIT_X);
+    last.x(SOFTMAX_X);
     last.dials.forEach(d => d.node.opacity(0));
     last.dots.opacity(0);
     input.question.opacity(0);

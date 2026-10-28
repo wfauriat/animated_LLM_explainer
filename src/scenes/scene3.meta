@@ -18,12 +18,8 @@
       "targetTime": 8.8
     },
     {
-      "name": "battery",
-      "targetTime": 14.77
-    },
-    {
       "name": "dive",
-      "targetTime": 20.87
+      "targetTime": 16.27
     }
   ],
   "seed": 2900565317

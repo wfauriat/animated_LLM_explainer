@@ -15,7 +15,6 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
-import {createBattery} from '../components/Battery';
 import {
   blinkCaret,
   botReplies,
@@ -28,7 +27,6 @@ import {createNetwork} from '../components/Network';
 import {FACE, PORTS} from '../components/Server';
 import {createRoom} from '../components/UserRoom';
 import {
-  BATTERY_AT,
   CAVITY_CENTER,
   COVER_ASIDE,
   COVER_ASIDE_SCALE,
@@ -37,7 +35,6 @@ import {
   NETWORK_ZOOM,
   NETWORK_ZOOM_POS,
   ROOM_PANEL,
-  SERVER_BOTTOM,
   SOCKET_Y,
   toNetwork,
 } from '../layout';
@@ -76,19 +73,6 @@ export default makeScene2D(function* (view) {
   net.dividerShift(-1700);
   net.userStartX(-900);
   net.zoom.position(NETWORK_ZOOM_POS).scale(NETWORK_ZOOM);
-
-  // Scene 3 placed the battery in close-up screen coordinates; this frame
-  // maps those into network coordinates so it zooms out with the server.
-  const battery = createBattery(clock, BATTERY_AT, SERVER_BOTTOM);
-  battery.cable.end(1);
-  battery.flow.opacity(1);
-  net.zoom.add(
-    <Node position={NETWORK_ZOOM_POS.scale(-1 / NETWORK_ZOOM)} scale={1 / NETWORK_ZOOM}>
-      {battery.cable}
-      {battery.flow}
-      {battery.node}
-    </Node>,
-  );
 
   const camera = (
     <Node scale={DIVE_ZOOM} position={CAVITY_CENTER.scale(-DIVE_ZOOM)}>

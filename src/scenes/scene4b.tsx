@@ -1,6 +1,7 @@
 // Scene 4b — Embedding. One index ("rain", 6290) goes through the embedding
 // block and comes out as a set of directions: a stack of compass dials, one
-// per dimension, receding in depth ("⋰" = many more). The block then folds,
+// per dimension, receding in depth (the first 3, "⋰" = many more, then the
+// last one). The block then folds,
 // and the representative rows get their compass stacks at the core entrance.
 import {CubicBezier, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
 import {
@@ -132,7 +133,7 @@ export default makeScene2D(function* (view) {
   copy.opacity(0);
   yield* all(
     big.node.opacity(1, 0.4),
-    big.node.position([380, 110], 1.0, easeOutCubic),
+    big.node.position([430, 140], 1.0, easeOutCubic),
     big.node.scale(1, 1.0, easeOutCubic),
   );
   yield* dialIn(big, anglesOf(id), 1.4, 0.3, 2);

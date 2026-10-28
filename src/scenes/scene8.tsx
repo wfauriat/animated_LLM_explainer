@@ -45,8 +45,8 @@ const R = 48; // cog radius
 const LAYERS_2 = 12; // GPT-2 small: transformer layers ...
 const ROWS = 12; // ... and attention heads
 const DEPTH = new Vector2(-30, -25); // one embedding dimension further back
-const PLANES = 4; // planes drawn behind the front one ...
-const FAR = 7; // ... plus a last one, standing for the 768th
+const PLANES = 2; // planes drawn behind the front one (dimensions 2 and 3) ...
+const FAR = 7; // ... then "⋰" and a last one, standing for the 768th
 const SLAB_T = 120; // slab thickness
 const TODAY = 1.8; // today's largest, relative to GPT-3 (illustrative)
 const layerX = (i: number) => (i - (LAYERS_2 - 1) / 2) * LX;
@@ -342,8 +342,8 @@ export default makeScene2D(function* (view) {
         />
       </Node>
       <Node ref={gpt2} opacity={0}>
-        {[1, 2, 3, 4].map(k => <Txt {...depthTxt} position={depthAt(k - 1)} text={`${k}`} />)}
-        <Txt {...depthTxt} position={depthAt(5)} text={'⋰'} />
+        {[1, 2, 3].map(k => <Txt {...depthTxt} position={depthAt(k - 1)} text={`${k}`} />)}
+        <Txt {...depthTxt} position={depthAt((PLANES + FAR) / 2)} text={'⋰'} />
         <Node ref={arcLayer} />
         {tokens}
       </Node>

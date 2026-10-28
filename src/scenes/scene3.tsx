@@ -1,6 +1,6 @@
 // Scene 3: the user fades out, we zoom in on the server and unscrew its
 // friendly face: behind it there are only LEDs and wires. Inside: layers of
-// machinery (detailed in the next scene), fed by a battery.
+// machinery (detailed in the next scene), fed by the battery from Scene 2.
 import {makeScene2D, Node} from '@motion-canvas/2d';
 import {
   all,
@@ -16,7 +16,6 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
-import {createBattery} from '../components/Battery';
 import {blinkCaret} from '../components/ChatApp';
 import {createNetwork} from '../components/Network';
 import {
@@ -28,7 +27,6 @@ import {
 } from '../components/Server';
 import {createRoom, typing} from '../components/UserRoom';
 import {
-  BATTERY_AT,
   CAVITY_CENTER,
   COVER_ASIDE,
   COVER_ASIDE_SCALE,
@@ -36,7 +34,6 @@ import {
   NETWORK_ZOOM,
   NETWORK_ZOOM_POS,
   ROOM_PANEL,
-  SERVER_BOTTOM,
 } from '../layout';
 import {colors} from '../theme';
 
@@ -68,14 +65,8 @@ export default makeScene2D(function* (view) {
   room.node.position(ROOM_PANEL.position).scale(ROOM_PANEL.scale);
   const net = createNetwork(clock, true);
   const server = net.server;
-  const battery = createBattery(clock, BATTERY_AT, SERVER_BOTTOM);
-  battery.node.y(800);
   const camera = createRef<Node>();
-  view.add(
-    <Node ref={camera}>
-      {[room.node, net.node, battery.cable, battery.flow, battery.node]}
-    </Node>,
-  );
+  view.add(<Node ref={camera}>{[room.node, net.node]}</Node>);
 
   yield clock(1000, 1000, linear);
   yield blinkCaret(room.chat);
@@ -115,12 +106,6 @@ export default makeScene2D(function* (view) {
     server.coverMover.scale(COVER_ASIDE_SCALE, 1.8, easeInOutCubic),
     chain(waitFor(0.5), flipCover(server)),
   );
-  yield* waitFor(2.5);
-
-  yield* waitUntil('battery');
-  yield* battery.node.y(BATTERY_AT.y, 1.0, easeOutCubic);
-  yield* battery.cable.end(1, 0.6);
-  yield* battery.flow.opacity(1, 0.5);
   yield* waitFor(4);
 
   // Dive into the open cabinet: Scene 4 starts inside, on the cavity color.

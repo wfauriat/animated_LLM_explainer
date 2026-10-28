@@ -1,6 +1,6 @@
 // Scene 4d — From directions to the next word. Only the last row's dials
-// matter for what comes next: they turn into the Top-5 candidate indices with
-// their probabilities; un-embedding maps them back to words; a "generative"
+// matter for what comes next: through the softmax layer they turn into the
+// Top-5 candidate indices with their probabilities; un-embedding maps them back to words; a "generative"
 // roulette picks one (not always the top one); N+1 appends it to the input.
 import {makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
 import {
@@ -22,12 +22,13 @@ import {
   CHIP_W,
   FOLDED_SCALE,
   LABEL_SCALE,
-  OUT_EXIT_X,
   OUT_LABEL_Y,
   OUT_ROWS_Y,
   PICKED,
   QUESTION_ROW,
   rowY,
+  SOFTMAX_H,
+  SOFTMAX_X,
   SPINE_H,
   TOKENS_X,
   TOP5,
@@ -68,7 +69,7 @@ export default makeScene2D(function* (view) {
         fontSize={TITLE_FONT}
         fontWeight={600}
         fill={colors.botBubble}
-        text={'Generative'}
+        text={'Generative pick'}
         opacity={0}
       />
       <Txt
@@ -84,18 +85,32 @@ export default makeScene2D(function* (view) {
   );
   yield* waitFor(0.5);
 
-  // --- The last row leaves the core and becomes the Top-5 -----------------
+  // --- Softmax: a thin layer at the core's exit ---------------------------
+  yield* waitUntil('softmax');
+  yield* all(
+    output.softmax.height(SOFTMAX_H, 0.7, easeInOutCubic),
+    output.softmaxLabel.opacity(1, 0.7),
+  );
+  yield* waitFor(0.3);
+
+  // --- The last row leaves the core and goes through the softmax ----------
   yield* waitUntil('last-row');
   const last = core.rows[core.rows.length - 1];
-  yield* last.x(OUT_EXIT_X, 1.0, easeInOutCubic);
+  yield* all(
+    last.x(SOFTMAX_X, 1.2, easeInOutCubic),
+    chain(
+      waitFor(0.6),
+      all(...last.dials.map(d => d.node.opacity(0, 0.6)), last.dots.opacity(0, 0.6)),
+    ),
+  );
 
+  // --- ... and comes out as the Top-5 -------------------------------------
   yield* waitUntil('top5');
-  const origin = new Vector2(OUT_EXIT_X, last.y);
+  const origin = new Vector2(SOFTMAX_X + 20, last.y);
   output.entries.forEach(e => e.chip.position(origin).scale(0.3).opacity(0));
   yield* all(
     output.label.opacity(1, 0.5),
-    ...last.dials.map(d => d.node.opacity(0, 0.5)),
-    last.dots.opacity(0, 0.5),
+    output.softmax.width(48, 0.25).to(40, 0.35),
     sequence(
       0.12,
       ...output.entries.map((e, i) =>

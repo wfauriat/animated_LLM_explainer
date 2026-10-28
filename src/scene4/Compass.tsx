@@ -1,6 +1,7 @@
 // A token's embedding drawn as "compass" dials receding in depth: one dial per
-// dimension, then "⋰" for the many dimensions not drawn. Each dial has a
-// toothed rim, so it can mesh with the cogs of the transformer core.
+// dimension for the first ones, "⋰" for the many dimensions not drawn, then the
+// last one. Each dial has a toothed rim, so it can mesh with the cogs of the
+// transformer core.
 import {brightness, Circle, Line, Node} from '@motion-canvas/2d';
 import {
   all,
@@ -12,6 +13,7 @@ import {
 } from '@motion-canvas/core';
 import {Cog} from '../components/Cog';
 import {colors} from '../theme';
+import {DEPTH_DOTS_AT, depthSlot} from './layout';
 
 export interface Dial {
   node: Node;
@@ -48,12 +50,12 @@ export function createDial(size: number, shade = 1, angle = 0): Dial {
   return {node: node(), rim: rim(), arrow: arrow()};
 }
 
-// "⋰" continuing the stack beyond the last drawn dimension.
-export function createDepthDots(size: number, depth: Vector2, dims: number) {
+// "⋰" receding in depth, starting `from` depth steps back.
+export function createDepthDots(size: number, depth: Vector2, from: number) {
   return (
     <Node>
       {range(3).map(j => (
-        <Circle position={depth.scale(dims + j * 0.35)} size={size * 0.09} fill={colors.label} />
+        <Circle position={depth.scale(from + j * 0.35)} size={size * 0.09} fill={colors.label} />
       ))}
     </Node>
   ) as Node;
@@ -80,9 +82,9 @@ export function createCompassStack({
   depth: Vector2;
   angles?: number[]; // initial arrow directions, default 0
 }): CompassStack {
-  const ellipsis = createDepthDots(size, depth, dims);
+  const ellipsis = createDepthDots(size, depth, DEPTH_DOTS_AT);
   const dials = range(dims).map(k => createDial(size, depthShade(k), angles?.[k] ?? 0));
-  dials.forEach((d, k) => d.node.position(depth.scale(k)));
+  dials.forEach((d, k) => d.node.position(depth.scale(depthSlot(k))));
   const node = (
     <Node>
       {ellipsis}

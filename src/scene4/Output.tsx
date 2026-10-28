@@ -1,4 +1,4 @@
-// Output side of the machine: Top-5 candidate indices with probabilities,
+// Output side of the machine: the softmax layer, Top-5 candidate indices with probabilities,
 // un-embedding back to words, the "generative" roulette that picks one, and
 // the N+1 loop that appends it to the input.
 import {Circle, CubicBezier, Line, Node, Rect, Txt} from '@motion-canvas/2d';
@@ -16,6 +16,9 @@ import {
   PICKED,
   QUESTION_ROW,
   rowY,
+  SOFTMAX_H,
+  SOFTMAX_X,
+  SOFTMAX_Y,
   SPINE_H,
   SPINE_Y,
   TOKENS_X,
@@ -37,6 +40,8 @@ export interface Top5Entry {
 
 export interface Output {
   node: Node;
+  softmax: Rect;
+  softmaxLabel: Txt;
   label: Txt; // "Top-5"
   entries: Top5Entry[];
   more: Txt;
@@ -53,6 +58,29 @@ export interface Output {
 // `done`: true = final state (word picked and appended), false = all hidden.
 export function createOutput(done: boolean): Output {
   const show = done ? 1 : 0;
+  const softmax = (
+    <Rect
+      x={SOFTMAX_X}
+      y={SOFTMAX_Y}
+      width={40}
+      height={done ? SOFTMAX_H : 0}
+      radius={20}
+      fill={colors.index}
+    />
+  ) as Rect;
+  const softmaxLabel = (
+    <Txt
+      x={SOFTMAX_X}
+      y={SOFTMAX_Y}
+      rotation={-90}
+      fontFamily={font}
+      fontSize={22}
+      fontWeight={600}
+      fill={colors.tokenText}
+      text={'Softmax'}
+      opacity={show}
+    />
+  ) as Txt;
   const label = makeLabel('Top-5');
   label.position([TOP5_X + 30, OUT_LABEL_Y]).scale(LABEL_SCALE).opacity(show);
   const entries = TOP5.map(({id, p}, i) => {
@@ -140,7 +168,7 @@ export function createOutput(done: boolean): Output {
       opacity: done ? (i === PICKED ? 1 : CANDIDATE_OPACITY) : 0,
     }),
   );
-  const genLabel = makeLabel('Generative');
+  const genLabel = makeLabel('Generative pick');
   genLabel.position([WORDS_X, OUT_LABEL_Y]).scale(LABEL_SCALE).opacity(show);
 
   // N+1: from the picked word, down the right edge, along the bottom, and up
@@ -184,6 +212,8 @@ export function createOutput(done: boolean): Output {
 
   const node = (
     <Node>
+      {softmax}
+      {softmaxLabel}
       {guides}
       {spine}
       {spineLabel}
@@ -199,6 +229,8 @@ export function createOutput(done: boolean): Output {
   ) as Node;
   return {
     node,
+    softmax,
+    softmaxLabel,
     label,
     entries,
     more,

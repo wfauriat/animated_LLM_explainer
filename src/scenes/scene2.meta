@@ -11,19 +11,23 @@
     },
     {
       "name": "split",
-      "targetTime": 6.3999999999999995
+      "targetTime": 6.4
     },
     {
       "name": "server",
       "targetTime": 8.2
     },
     {
+      "name": "battery",
+      "targetTime": 10.85
+    },
+    {
       "name": "user-wire",
-      "targetTime": 10.850000000000009
+      "targetTime": 13.75
     },
     {
       "name": "many-users",
-      "targetTime": 13.65000000000001
+      "targetTime": 16.55
     }
   ],
   "seed": 3555362287

@@ -17,7 +17,7 @@ import {blinkCaret} from '../components/ChatApp';
 import {createNetwork} from '../components/Network';
 import {FACE, faceIdle} from '../components/Server';
 import {createRoom, typing} from '../components/UserRoom';
-import {ROOM_FULL, ROOM_PANEL, SERVER_SCALE} from '../layout';
+import {BATTERY_AT, ROOM_FULL, ROOM_PANEL, SERVER_SCALE} from '../layout';
 import {colors} from '../theme';
 
 export default makeScene2D(function* (view) {
@@ -66,6 +66,18 @@ export default makeScene2D(function* (view) {
   );
   yield* server.face.show(FACE.smile, 0.15, 0.05);
   yield faceIdle(server.face);
+  yield* waitFor(1);
+
+  // The battery rises below the server and plugs in: it stays through Scene 3.
+  yield* waitUntil('battery');
+  const battery = net.battery;
+  battery.node.y(BATTERY_AT.y + 60);
+  yield* all(
+    battery.node.opacity(1, 0.6),
+    battery.node.y(BATTERY_AT.y, 0.8, easeOutCubic),
+  );
+  yield* battery.cable.end(1, 0.6);
+  yield* battery.flow.opacity(1, 0.5);
   yield* waitFor(1);
 
   yield* waitUntil('user-wire');

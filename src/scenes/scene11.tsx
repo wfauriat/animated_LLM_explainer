@@ -123,7 +123,7 @@ export default makeScene2D(function* (view) {
     createCompassStack({
       dims: DIMS,
       size: 54,
-      depth: new Vector2(-20, -16),
+      depth: new Vector2(-26, -21), // same dial/step ratio as Scene 4, so "⋰" shows
       angles: range(DIMS).map(k => embeddingAngle(IDS[t], k)),
     }),
   );
@@ -134,16 +134,21 @@ export default makeScene2D(function* (view) {
       return c;
     }),
   );
-  const vectorRow = (vals: number[], props = {}) => (
-    <Rect layout alignItems={'center'} gap={4} {...props}>
-      <Txt fontFamily={font} fontSize={40} fill={colors.label} text={'['} />
-      {vals.map(v => (
-        <Txt width={64} textAlign={'center'} fontFamily={font} fontSize={28} fill={v < 0 ? NEG : POS} text={fmt(v)} />
-      ))}
-      <Txt fontFamily={font} fontSize={28} fill={colors.label} text={'…'} />
-      <Txt fontFamily={font} fontSize={40} fill={colors.label} text={']'} />
-    </Rect>
-  );
+  // Like the dials: the first dimensions, "…", then the last one.
+  const vectorRow = (vals: number[], props = {}) => {
+    const num = (v: number) => (
+      <Txt width={64} textAlign={'center'} fontFamily={font} fontSize={28} fill={v < 0 ? NEG : POS} text={fmt(v)} />
+    );
+    return (
+      <Rect layout alignItems={'center'} gap={4} {...props}>
+        <Txt fontFamily={font} fontSize={40} fill={colors.label} text={'['} />
+        {vals.slice(0, -1).map(num)}
+        <Txt marginLeft={6} marginRight={6} fontFamily={font} fontSize={28} fill={colors.label} text={'…'} />
+        {num(vals[vals.length - 1])}
+        <Txt fontFamily={font} fontSize={40} fill={colors.label} text={']'} />
+      </Rect>
+    );
+  };
   const tile = (seedA: number, seedB: number, border: string, n = TILE_N, cell = TILE_CELL) => (
     <Node>
       <Rect width={n * cell + 10} height={n * cell + 10} radius={6} stroke={border} lineWidth={3} fill={'#0f1218'} />
@@ -279,10 +284,15 @@ export default makeScene2D(function* (view) {
     [new Vector2(-60, TENSOR.y - 2 * TENSOR.h), new Vector2(-60, DIE.y + DIE.h / 2)],
     [new Vector2(60, DIE.y + DIE.h / 2), new Vector2(60, TENSOR.y - 2 * TENSOR.h)],
   ];
-  // Before the first layer, the tensor holds the token vectors shown above.
+  // Columns: the first dimensions, "…", then the last one. Before the first
+  // layer, the tensor holds the token vectors shown above (first 3 and last).
+  const lastCol = TENSOR.cols - 1;
   const tensorValue = (r: number, c: number) => {
+    if (c === lastCol - 1) return '…';
     const step = Math.floor(tensorState() * 8);
-    return fmt(step === 0 && c < DIMS ? VECTORS[r][c] : rnd(r, c, step), 2);
+    if (step === 0 && c < DIMS - 1) return fmt(VECTORS[r][c], 2);
+    if (step === 0 && c === lastCol) return fmt(VECTORS[r][DIMS - 1], 2);
+    return fmt(rnd(r, c, step), 2);
   };
   const memory = (x: number) => (
     <Node x={x} y={DIE.y}>

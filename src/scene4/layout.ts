@@ -50,10 +50,16 @@ export const LABEL_SCALE = 0.75;
 // ---------------------------------------------------------------------------
 // Embedding vectors ("compass" stacks) and the rows of the core
 
-export const DIMS = 4; // dimensions drawn along the depth axis
+export const DIMS = 4; // dimensions drawn along the depth axis: the first 3 and the last
 export const DIAL = 64; // dial diameter in the overview
 export const DEPTH = new Vector2(-30, -25); // offset per dimension (towards the back)
-export const CORE_IN_X = -420; // front dial of each stack when entering the core
+// Depth position (in DEPTH steps) of drawn dimension k: the first ones side by
+// side, then a gap holding "⋰" (the many dimensions not drawn), then the last.
+const LAST_GAP = 1.6;
+export const depthSlot = (k: number) => (k < DIMS - 1 ? k : k + LAST_GAP);
+// Where the "⋰" starts: centered in the gap.
+export const DEPTH_DOTS_AT = (depthSlot(DIMS - 2) + depthSlot(DIMS - 1)) / 2 - 0.35;
+export const CORE_IN_X = -380; // front dial of each stack when entering the core
 
 // Representative token rows that flow through the core.
 export const CORE_ROWS = [
@@ -83,9 +89,11 @@ export const COG_SLOTS = [
   {y: 155, r: 46},
   {y: 305, r: 46},
 ];
-export const PLANE = {x: -30, y: -10, w: 860, h: 790};
+// Front plane; the back one (last dimension) sits depthSlot(DIMS - 1) steps
+// behind it and must clear the Embedding spine and the label.
+export const PLANE = {x: -5, y: 4.5, w: 810, h: 765};
 export const MASTER = new Vector2(380, 372); // master gear driven by the crank
-export const CORE_LABEL = new Vector2(-37, -505);
+export const CORE_LABEL = new Vector2(-37, -520);
 
 // How much layer `step` nudges dimension k of core row r (degrees).
 // Steps 0-2 = layers 1-3, step 3 = the "⋯" fast-forward, step 4 = layer N.
@@ -113,6 +121,11 @@ export const PICKED = 1; // "coat": not the top choice
 export const OUT_ROWS_Y = [-220, -120, -20, 80, 180];
 export const OUT_ELLIPSIS_Y = 250;
 export const OUT_EXIT_X = 450; // where the last row's stack leaves the core
+// Softmax: thin vertical layer between the core and the Top-5; the last row
+// goes into it and the Top-5 comes out of it.
+export const SOFTMAX_X = 434;
+export const SOFTMAX_Y = 10;
+export const SOFTMAX_H = 560;
 export const TOP5_X = 520;
 export const UNEMBED_X = 690;
 export const WORDS_X = 840;

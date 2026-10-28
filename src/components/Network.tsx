@@ -8,10 +8,15 @@ import {
   SimpleSignal,
   Vector2,
 } from '@motion-canvas/core';
+import {Battery, createBattery} from './Battery';
 import {Clock, curveTo, FlowDots} from './Flow';
 import {createServer, FACE, PortName, PORTS, Server} from './Server';
 import {
+  BATTERY_AT,
   dividerX,
+  NETWORK_ZOOM,
+  NETWORK_ZOOM_POS,
+  SERVER_BOTTOM,
   SERVER_POS,
   SERVER_SCALE,
   SOCKET_Y,
@@ -51,6 +56,7 @@ export interface Network {
   zoom: Node; // network content (zoomed in Scene 3)
   dividerShift: SimpleSignal<number, void>;
   server: Server;
+  battery: Battery; // powers the server from Scene 2 on
   userWire: CubicBezier;
   userFlows: Node;
   userStartX: SimpleSignal<number, void>;
@@ -106,6 +112,13 @@ export function createNetwork(clock: Clock, visible: boolean): Network {
   server.node.opacity(visible ? 1 : 0);
   server.face.set(visible ? FACE.smile : FACE.off);
 
+  // The battery is placed in Scene 3's close-up screen coordinates; its frame
+  // maps those into network coordinates so it zooms along with the server.
+  const battery = createBattery(clock, BATTERY_AT, SERVER_BOTTOM);
+  battery.node.opacity(visible ? 1 : 0);
+  battery.cable.end(visible ? 1 : 0);
+  battery.flow.opacity(visible ? 1 : 0);
+
   <Node ref={node}>
     <Line
       points={panelShape}
@@ -135,6 +148,11 @@ export function createNetwork(clock: Clock, visible: boolean): Network {
         </Node>
       ))}
       {server.node}
+      <Node position={NETWORK_ZOOM_POS.scale(-1 / NETWORK_ZOOM)} scale={1 / NETWORK_ZOOM}>
+        {battery.cable}
+        {battery.flow}
+        {battery.node}
+      </Node>
     </Node>
   </Node>;
 
@@ -143,6 +161,7 @@ export function createNetwork(clock: Clock, visible: boolean): Network {
     zoom: zoom(),
     dividerShift,
     server,
+    battery,
     userWire: userWire(),
     userFlows: userFlows(),
     userStartX,

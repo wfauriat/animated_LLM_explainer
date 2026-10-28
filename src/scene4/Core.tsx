@@ -25,6 +25,8 @@ import {
   CORE_ROWS,
   coreAngle,
   DEPTH,
+  DEPTH_DOTS_AT,
+  depthSlot,
   DIAL,
   DIMS,
   LABEL_SCALE,
@@ -85,11 +87,13 @@ export function createCore(): Core {
 
   // Back to front, so nearer planes cover farther ones.
   for (let k = DIMS - 1; k >= 0; k--) {
-    const off = DEPTH.scale(k);
+    const off = DEPTH.scale(depthSlot(k));
     const plane = (<Node filters={k ? [brightness(depthShade(k))] : []} />) as Node;
-    if (k === DIMS - 1) {
+    if (k === DIMS - 2) {
+      // "⋰" in the gap before the last plane (the dimensions not drawn),
+      // behind this plane's dials.
       rows.forEach(row => {
-        row.dots = createDepthDots(DIAL, DEPTH, DIMS);
+        row.dots = createDepthDots(DIAL, DEPTH, DEPTH_DOTS_AT);
         row.dots.position(() => new Vector2(row.x(), row.y));
         plane.add(row.dots);
       });

@@ -671,6 +671,60 @@ User decisions:
 
 ---
 
+# Day 4 — 2026-10-28
+
+## 36. The battery from Scene 2 on
+
+**User decision:** the battery appears in Scene 2, right before the network wiring, and stays until the end of Scene 3.
+
+**Changes:**
+- `createNetwork()` now owns the battery (`net.battery`). It sits in the `zoom` node inside a frame that maps Scene 3's close-up coordinates (`BATTERY_AT`, `SERVER_BOTTOM`) into network coordinates, so it zooms with the server. This is the mapping Scene 5b already used; 5b now reuses `net.battery`.
+- **Scene 2:** a new `battery` marker comes after the server's face lights up and before `user-wire`. The battery fades in while rising 60 px, the cable draws, then the energy flows.
+- **Scene 3:** its own battery and the `battery` marker are gone. After the cover is laid aside there is a 4 s hold, then `dive`.
+- **Markers:** Scene 2: `battery` 10.85, `user-wire` 13.75, `many-users` 16.55. Scene 3: `dive` 16.27.
+
+**Length:** Scene 2 is 24.05 s, Scene 3 is 18.48 s; the video is 473.05 s (7 min 53 s). Checked with stills.
+
+## 37. Scene 4d: a Softmax layer before the Top-5
+
+**User request:** a vertical "Softmax" layer, with the last row going through it before the Top-5 appears.
+
+**Changes:**
+- **The spine:** a cyan spine labelled "Softmax" (the Top-5's colour) sits between the core and the Top-5 (`SOFTMAX_X` 434, height 560, clear of the master gear). It belongs to `createOutput()` (`output.softmax`, `output.softmaxLabel`), so it is part of Scene 5a's starting frame and fades out with the output panel at `shrink`.
+- **Scene 4d:**
+  - At the new `softmax` marker, the spine grows.
+  - At `last-row`, the last row slides into it, and its dials fade as they pass under the spine.
+  - At `top5`, the spine pulses and the Top-5 chips come out of its right side.
+- **Markers:** `softmax` 0.5, `last-row` 1.5, `top5` 2.7, `unembed` 6.58, `generative` 10.53, `spin` 12.03, `pick` 18.63, `n+1` 20.93.
+
+**Length:** Scene 4d is 27.92 s; the video is about 474.2 s (7 min 54 s). Checked with stills.
+
+## 38. Embedding depth: 3 dials, "⋰", then the last one
+
+**User request:** along the depth (embedding dimension), show 3 dials, then an ellipsis, then the last one, instead of 4 dials then "⋰". Scenes 8 and 11 follow suit.
+
+**Changes:**
+- **`src/scene4/layout.ts`:**
+  - `depthSlot(k)` gives where a drawn dimension sits in depth: 0, 1, 2, then 4.6 for the last.
+  - `DEPTH_DOTS_AT` puts the "⋰" in the gap.
+  - `createDepthDots(size, depth, from)` now takes its starting depth; Scene 6 still passes 1.
+- **Compass stacks** (Scenes 4b, 11) and the **core** (4c, 4d, 5a) place dials and planes with `depthSlot()`. The back plane is now visibly further back. The core's "⋰" sits on plane 3, behind its dials.
+- **Core re-layout, so the deeper back plane clears the Embedding spine and the label:**
+  - `PLANE` is now {x −5, y 4.5, w 810, h 765};
+  - `CORE_IN_X` moved from −420 to −380;
+  - `CORE_LABEL` moved to y −520.
+- **Scene 4b:** the close-up stack lands at (430, 140), clear of the slab.
+- **Scene 8:** 2 planes behind the front one (instead of 4), plus the far one. Depth labels "1, 2, 3", then "⋰" halfway to the far plane. The far plane has no label of its own, since "embedding dimension 768" sits right there.
+- **Scene 11:**
+  - Vectors read `[0.9 1.0 0.8 … 0.3]`.
+  - The GPU tensor's columns are 6 numbers, "…", then the last; at the start, columns 1–3 and the last match the vectors.
+  - The stack's depth step is now (−26, −21), so the dots show.
+- **Known minor issue:** in 4b and 4c, the "took" embedding guide passes behind the back dial of "a".
+
+**Length:** unchanged (no timing changes). Checked with stills of 4b, 4c, 4d, 5a, 8 and 11.
+
+---
+
 ## How to render the full video
 
 Close any `npm start` editor tab first (not required, but it frees the CPU). Then, from the project folder:
