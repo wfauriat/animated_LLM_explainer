@@ -35,14 +35,12 @@ import {
   NETWORK_ZOOM,
   NETWORK_ZOOM_POS,
   ROOM_PANEL,
+  SCREEN_ZOOM,
   SOCKET_Y,
   toNetwork,
 } from '../layout';
 import {colors} from '../theme';
 import {COMPLETION_TEXT, Envelope, PROMPT_TEXT} from '../scene5/parts';
-
-// Camera framing of the monitor that matches Scene 1's opening shot.
-const SCREEN_ZOOM = 3;
 
 export default makeScene2D(function* (view) {
   view.fill(colors.room);

@@ -1,0 +1,50 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "question",
+      "targetTime": 1.2000000000000002
+    },
+    {
+      "name": "reply",
+      "targetTime": 3.633333333333334
+    },
+    {
+      "name": "server",
+      "targetTime": 8.783333333333335
+    },
+    {
+      "name": "fine-tuning",
+      "targetTime": 13.783333333333335
+    },
+    {
+      "name": "examples",
+      "targetTime": 19.613333333333333
+    },
+    {
+      "name": "more-examples",
+      "targetTime": 33.83153831283206
+    },
+    {
+      "name": "policy",
+      "targetTime": 38.419768769779395
+    },
+    {
+      "name": "aligned",
+      "targetTime": 41.1197687697794
+    },
+    {
+      "name": "ask-again",
+      "targetTime": 47.34976876977939
+    },
+    {
+      "name": "answer",
+      "targetTime": 52.33310210311272
+    },
+    {
+      "name": "still-guessing",
+      "targetTime": 57.18310210311273
+    }
+  ],
+  "seed": 2749440496
+}

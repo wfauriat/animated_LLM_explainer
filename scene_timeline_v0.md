@@ -286,3 +286,25 @@ with specific purpose hardware (GPUs, algebra efficient), and specific purpose
 software (to orchestrate the operations, provide adapter features like auto-diff).
 This is necessary to enable scale : for training, trillions of small step nudging 
 of weights (billions of them) 
+
+
+-- Sequence / scene 12
+
+In this scene, I want to give a sense of what "alignment" is and how it's
+obtained via fine-tuning [SFT and Policy Optimization, but the idea is not
+to get too much into specifics]. The idea is to use the chat app, and text boxes
+again. The user might start with : "Why is the sky blue?" and the "un-aligned"
+chat-bot would then answer "Why is the sun so bright? Oh why indeed such beauty
+before my eyes?". Using a "poem-like" (you may adjust a little) is a visual
+apparatus to explain why continuation "could" make sense (but it is not
+what most user want). Then we might re-use the server (with its face) from scene
+2 and plug the connexion to it. The animation would display "non-aligned text
+completor". Then files with exemples (Question, Answer pairs) [emulating SFT], 
+design a few, allow some time to read them rapidly (so make them short). You may
+find a way to convey the impression that the machine has ingested a few. You may
+remove the cover and use the red arrows from previous scene to signal that
+notches are beign nudge again. After a bit of fine-tuning, The text that use to
+display "non-aligned text completor" would now say "aligned model (helpful assistant)".
+The, as the last section of the scene, the user would then ask again (just after 
+the app screen gets cleaned), and he would then get a proper response (not text
+continuation).

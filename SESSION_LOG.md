@@ -772,6 +772,39 @@ The conclusion box is now a centred column with two lines:
 
 Timing is unchanged. Checked with a still.
 
+# Day 5 — 2026-10-30
+
+## 42. Scene 12: alignment (one scene, about 62 s)
+
+The brief (timeline): the pre-trained model only continues text; fine-tuning on examples makes it answer. Only SFT is shown as a process; "the idea is not to get too much into specifics".
+
+User decisions:
+- **Policy optimization:** one caption, no extra sequence. To be tried; the user may drop it.
+- **Refusal card:** yes, so "alignment" means more than formatting.
+- **Face:** keep the same smile and change only the LED colour, so it stays coherent with the wiring behind the cover.
+- **Closing line:** "Still a next-token guesser", on the final chat screen.
+- **Wording:** "completer", and "non-aligned" throughout.
+- **Ending:** no fade.
+
+**What happens:**
+1. **Raw model:** fades in on Scene 1's screen framing with an empty chat. The user asks "Why is the sky blue?". The reply is a three-line italic poem that carries on with more questions ("Why is the sea so deep? Why is the sun so bright? Oh why indeed such beauty before my eyes?").
+2. **Server:** pull out to the split screen, without the other users. The user's wire draws to the server, whose smile is amber. Label: "non-aligned text completer".
+3. **Fine-tuning:** zoom in, the screws come out, the LEDs flicker off, and the cover goes to the left, flipped to its wiring (the right of the frame holds the examples). The interior shows 15 tunable cogs. Heading: "Fine-tuning on examples of good answers" / "(supervised fine-tuning, SFT)".
+4. **Examples:** 4 cards (`example_N.txt`) with a blue question and a green answer are read, then fly into the cabinet: Australia/Canberra, "bonjour"/"Hello.", 7 × 8/56, and the refusal ("How can I hurt my noisy neighbour?" / "I can't help with that. Want help writing to them?"). Each sends red arcs across the cogs, and each notch turns 20° at most as the arcs reach it.
+5. **More examples:** 14 small sheets fly in, with 3 quicker waves of 9° at most. Caption: "same machine, same cogs" / "far fewer examples, small nudges". Then "then **policy optimization:** better answers get rewarded".
+6. **Aligned:** the cover and screws go back, the smile lights up green, and the label becomes "aligned model (helpful assistant)" in green.
+7. **Same question:** back to the screen, the chat clears, the question is asked again, and the answer is "The sky looks blue because air scatters blue sunlight more than red." A closing box follows: "Still a next-token guesser: now the likely next tokens are a helpful answer".
+
+**Markers:** `question`, `reply`, `server`, `fine-tuning`, `examples`, `more-examples`, `policy`, `aligned`, `ask-again`, `answer`, `still-guessing`. `scene12.meta` is empty, so they run at their natural times.
+
+**Code:**
+- `src/scenes/scene12.tsx` (added to `project.ts`).
+- `LedFace.tint` in `Server.tsx`: 0 = amber (`colors.ledRaw`), 1 = green (the default, so earlier scenes don't change). The server's halo follows it.
+- `INTERIOR_COLS` and `INTERIOR_ROWS` are exported, so Scene 12 can swap the interior for tunable cogs.
+- `SCREEN_ZOOM` moved from Scene 5b to `src/layout.ts`.
+
+**Length:** Scene 12 is 61.77 s (planned about 50 s, trimmed from 64 s); the video is 519.6 s (8 min 40 s). Checked with stills, including Scenes 2 and 5b after the shared changes; not yet rendered in full.
+
 ---
 
 ## How to render the full video
@@ -782,6 +815,6 @@ Close any `npm start` editor tab first (not required, but it frees the CPU). The
 npm run video
 ```
 
-This writes `output/project.mp4` (1920×1080, 60 fps, about 4 min 11 s). At the current length it takes roughly 15–20 minutes.
+This writes `output/project.mp4` (1920×1080, 60 fps, about 8 min 40 s). Expect it to take longer than the earlier 4-minute renders (15–20 minutes).
 
 Alternatively, run `npm start`, open http://localhost:9000, go to Video Settings → Rendering, choose **Video (FFmpeg)** as the exporter, and click **Render**.

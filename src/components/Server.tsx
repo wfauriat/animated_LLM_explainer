@@ -11,11 +11,15 @@ import {
 import {
   all,
   chain,
+  Color,
+  createComputed,
   createRef,
   createRefArray,
+  createSignal,
   loop,
   range,
   sequence,
+  SimpleSignal,
   ThreadGenerator,
   Vector2,
   waitFor,
@@ -93,10 +97,13 @@ export interface LedFace {
   node: Node;
   set(bitmap: FaceBitmap): void;
   show(bitmap: FaceBitmap, duration?: number, stagger?: number): ThreadGenerator;
+  tint: SimpleSignal<number, void>; // LED color: 0 = raw model, 1 = assistant
 }
 
 function createLedFace(): LedFace {
   const lit = createRefArray<Circle>();
+  const tint = createSignal(1);
+  const ledColor = createComputed(() => Color.lerp(colors.ledRaw, colors.ledOn, tint()));
   const node = (
     <Node>
       {LED_GRID.map(({pos}) => (
@@ -107,8 +114,8 @@ function createLedFace(): LedFace {
           ref={lit}
           position={pos}
           size={12}
-          fill={colors.ledOn}
-          shadowColor={colors.ledOn}
+          fill={ledColor}
+          shadowColor={ledColor}
           shadowBlur={14}
           opacity={0}
         />
@@ -121,6 +128,7 @@ function createLedFace(): LedFace {
 
   return {
     node,
+    tint,
     set(bitmap) {
       LED_GRID.forEach(({row, col}, i) => lit[i].opacity(isOn(bitmap, row, col) ? 1 : 0));
     },
@@ -211,8 +219,8 @@ function CoverBack() {
 // ---------------------------------------------------------------------------
 // Interior: a glimpse of the machinery explored in Scene 4 (meshed cogs).
 
-const INTERIOR_COLS = [-85, 0, 85];
-const INTERIOR_ROWS = [-190, -95, 0, 95, 190];
+export const INTERIOR_COLS = [-85, 0, 85];
+export const INTERIOR_ROWS = [-190, -95, 0, 95, 190];
 
 function Interior({clock}: {clock: Clock}) {
   // Neighbours in a row turn in opposite directions; with 9 teeth a tooth of
@@ -265,15 +273,17 @@ export function createServer(clock: Clock): Server {
   const interior = createRef<Node>();
   const face = createLedFace();
 
-  const halo = new Gradient({
-    type: 'radial',
-    fromRadius: 0,
-    toRadius: 700,
-    stops: [
-      {offset: 0, color: colors.halo + '55'},
-      {offset: 1, color: colors.halo + '00'},
-    ],
-  });
+  const halo = (color: string) =>
+    new Gradient({
+      type: 'radial',
+      fromRadius: 0,
+      toRadius: 700,
+      stops: [
+        {offset: 0, color: color + '55'},
+        {offset: 1, color: color + '00'},
+      ],
+    });
+  const glow = () => 0.75 + 0.25 * Math.sin(clock() * 1.6);
   const coverRect = {
     width: COVER_W,
     height: COVER_H,
@@ -284,7 +294,8 @@ export function createServer(clock: Clock): Server {
   const status = [0.7, 1.3, 2.1, 0.9, 1.7];
 
   <Node ref={node}>
-    <Circle size={1400} fill={halo} opacity={() => 0.75 + 0.25 * Math.sin(clock() * 1.6)} />
+    <Circle size={1400} fill={halo(colors.halo)} opacity={() => glow() * face.tint()} />
+    <Circle size={1400} fill={halo(colors.ledRaw)} opacity={() => glow() * (1 - face.tint())} />
     {Object.values(PORTS).map(({pos, normal}) => (
       <Rect
         position={pos.sub(normal.scale(4))}

@@ -19,6 +19,7 @@ import scene8 from './scenes/scene8?scene';
 import scene9 from './scenes/scene9?scene';
 import scene10 from './scenes/scene10?scene';
 import scene11 from './scenes/scene11?scene';
+import scene12 from './scenes/scene12?scene';
 
 // Make sure the font is ready before any text gets measured.
 await Promise.all(
@@ -28,5 +29,5 @@ await Promise.all(
 );
 
 export default makeProject({
-  scenes: [scene1, scene2, scene3, scene4a, scene4b, scene4c, scene4d, scene5a, scene5b, scene6, scene7a, scene7b, scene8, scene9, scene10, scene11],
+  scenes: [scene1, scene2, scene3, scene4a, scene4b, scene4c, scene4d, scene5a, scene5b, scene6, scene7a, scene7b, scene8, scene9, scene10, scene11, scene12],
 });

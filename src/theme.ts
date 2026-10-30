@@ -51,6 +51,7 @@ export const colors = {
   coverEdge: '#3a404d',
   cavity: '#0b0e14', // same as machineBg: Scene 3 dives into it
   ledOn: '#8dffa6',
+  ledRaw: '#ffb454', // Scene 12: the model before fine-tuning
   ledOff: '#1a2e21',
   halo: '#3ddc6a',
   screw: '#a3a9b5',

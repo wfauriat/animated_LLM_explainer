@@ -16,6 +16,8 @@ export const CHAT_ZOOM = 1.08;
 export const ROOM_FULL = {position: new Vector2(0, -60), scale: 0.42};
 // ... and once it has shrunk into the bottom-left panel of the split screen.
 export const ROOM_PANEL = {position: new Vector2(-540, -130), scale: 0.36};
+// Camera zoom from the split screen back to Scene 1's opening shot.
+export const SCREEN_ZOOM = 3;
 
 // Slanted divider of the split screen: x at the top and bottom edges.
 // The left panel is wider at the bottom, the right one wider at the top.
