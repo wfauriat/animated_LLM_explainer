@@ -1,0 +1,42 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "request",
+      "targetTime": 1.2999999999999998
+    },
+    {
+      "name": "scaffold",
+      "targetTime": 5.15
+    },
+    {
+      "name": "adapted",
+      "targetTime": 11.749999999999998
+    },
+    {
+      "name": "expert",
+      "targetTime": 16.349999999999998
+    },
+    {
+      "name": "others-work",
+      "targetTime": 19.849999999999998
+    },
+    {
+      "name": "scale",
+      "targetTime": 26.549999999999997
+    },
+    {
+      "name": "limits",
+      "targetTime": 34.7391252520473
+    },
+    {
+      "name": "follow-up",
+      "targetTime": 41.5391252520473
+    },
+    {
+      "name": "jumpstart",
+      "targetTime": 45.989125252047295
+    }
+  ],
+  "seed": 2421809645
+}

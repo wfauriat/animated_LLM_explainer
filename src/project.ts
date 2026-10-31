@@ -2,6 +2,7 @@ import {makeProject} from '@motion-canvas/core';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/400-italic.css';
 import '@fontsource/inter/600.css';
+import '@fontsource/jetbrains-mono/400.css';
 
 import scene1 from './scenes/scene1?scene';
 import scene2 from './scenes/scene2?scene';
@@ -20,14 +21,16 @@ import scene9 from './scenes/scene9?scene';
 import scene10 from './scenes/scene10?scene';
 import scene11 from './scenes/scene11?scene';
 import scene12 from './scenes/scene12?scene';
+import scene13 from './scenes/scene13?scene';
+import scene14 from './scenes/scene14?scene';
 
 // Make sure the font is ready before any text gets measured.
 await Promise.all(
-  ['400 30px Inter', 'italic 400 30px Inter', '600 30px Inter'].map(f =>
+  ['400 30px Inter', 'italic 400 30px Inter', '600 30px Inter', '400 30px "JetBrains Mono"'].map(f =>
     document.fonts.load(f),
   ),
 );
 
 export default makeProject({
-  scenes: [scene1, scene2, scene3, scene4a, scene4b, scene4c, scene4d, scene5a, scene5b, scene6, scene7a, scene7b, scene8, scene9, scene10, scene11, scene12],
+  scenes: [scene1, scene2, scene3, scene4a, scene4b, scene4c, scene4d, scene5a, scene5b, scene6, scene7a, scene7b, scene8, scene9, scene10, scene11, scene12, scene13, scene14],
 });

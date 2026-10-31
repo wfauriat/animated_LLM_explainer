@@ -262,9 +262,13 @@ export interface Roulette {
   rotationFor(i: number, turns: number): number;
 }
 
-export function createRoulette(radius: number): Roulette {
-  const others = 1 - TOP5.reduce((a, t) => a + t.p, 0);
-  const parts = [...TOP5.map(t => ({label: t.word, p: t.p})), {label: '…', p: others}];
+// `entries` default to Scene 4's Top-5; what's left of the wheel is a "…" slice.
+export function createRoulette(
+  radius: number,
+  entries: {word: string; p: number}[] = TOP5,
+): Roulette {
+  const others = 1 - entries.reduce((a, t) => a + t.p, 0);
+  const parts = [...entries.map(t => ({label: t.word, p: t.p})), {label: '…', p: others}];
   const wheel = createRef<Node>();
   const slices: Circle[] = [];
   let start = -90; // first slice starts under the pointer (top)
@@ -283,7 +287,7 @@ export function createRoulette(radius: number): Roulette {
               startAngle={start}
               endAngle={start + sweep}
               closed
-              fill={i < TOP5.length ? SLICE_FILLS[i] : '#3a3f4a'}
+              fill={i < entries.length ? SLICE_FILLS[i] : '#3a3f4a'}
               stroke={colors.machineBg}
               lineWidth={5}
             />
@@ -298,9 +302,9 @@ export function createRoulette(radius: number): Roulette {
                 position={at}
                 rotation={mid + 90}
                 fontFamily={font}
-                fontSize={i < TOP5.length ? 34 : 40}
+                fontSize={i < entries.length ? 34 : 40}
                 fontWeight={600}
-                fill={i < TOP5.length ? colors.tokenText : colors.textLight}
+                fill={i < entries.length ? colors.tokenText : colors.textLight}
                 text={label}
               />
             </Node>

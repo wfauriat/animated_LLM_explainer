@@ -1,0 +1,38 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "task",
+      "targetTime": 1.1
+    },
+    {
+      "name": "command",
+      "targetTime": 3.6000000000000005
+    },
+    {
+      "name": "grounding",
+      "targetTime": 7.199999999999999
+    },
+    {
+      "name": "steps",
+      "targetTime": 21.280000000000005
+    },
+    {
+      "name": "stochastic",
+      "targetTime": 29.088500000000003
+    },
+    {
+      "name": "reach",
+      "targetTime": 34.3385
+    },
+    {
+      "name": "human",
+      "targetTime": 39.20850000000001
+    },
+    {
+      "name": "control",
+      "targetTime": 43.10850000000001
+    }
+  ],
+  "seed": 4020886686
+}

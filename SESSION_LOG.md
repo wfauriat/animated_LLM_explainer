@@ -819,6 +819,63 @@ User request: make the X-ray step more explicit, and the captions less schematic
 
 **Length:** unchanged (Scene 11 is 38.35 s, markers unchanged). Checked with stills; not yet rendered in full.
 
+## 44. Scenes 13 and 14: brief and decisions
+
+The timeline's Scene 13 asks **why** LLMs seem so good, with an app scaffold as a suggested example, and opens on agents, grounding and blast radius.
+
+User decisions:
+- **Structure:** two scenes with one running example. Scene 13 is the lay message, Scene 14 opens on agents.
+- **Example:** the app scaffold. It should convey a large, structured, purpose-specific production: from an intent to an adapted answer in almost no time.
+- **The comparison with experts:** keep it, without overusing it. The model must not look magical or all-powerful.
+- **Ending:** the animation does not end here. The ending will be discussed later, so Scene 14 has no closing and no fade.
+
+## 45. Scene 13: why they seem so good (about 52 s)
+
+The running example is a booking app for a bike repair shop, in `src/scene13/parts.tsx`. The code is real and meant to read as serious work.
+
+**What happens:**
+1. **Title:** "Why do language models *seem* so good? (a proposed interpretation)", centred, then moves to the top.
+2. **Request:** "Set up a web app for my bike repair shop: customers book a time online and get a reminder email."
+3. **Scaffold:** an editor writes 7 files in about 7 s. On the left, a person types the same thing by hand and is still on the third line.
+4. **Adapted:** the request's phrases are highlighted, with links to `bike-shop/`, `templates/book_repair.html` and `emails/reminder.py`. Caption: "From an intent to an answer **adapted to the need,** in almost no time".
+5. **Expert:** a muted line, "A trained expert may do better in places, but rarely this fast".
+6. **Other people's work:** each file gets a stack of sheets, each with an author dot. Caption: "Thousands of people have solved **almost the same problems:** it integrates their work". The stack for `emails/reminder.py` is thin (widths are illustrative).
+7. **Scale:** sheets fly into 30 tunable cogs, with 4 waves of shrinking notch corrections. Label: "billions of knobs". Caption: "Tuned step by step, until it guesses well in **an enormous number of contexts**".
+8. **Limits:** `emails/reminder.py` up close. The line importing `easy_reminder_mail` is flagged "this library does not exist", and the thin stack is flagged "few examples". Caption: "Likely right, **never guaranteed**".
+9. **Follow-up:** the user reports the crash, the import line changes, and `emails/mailer.py` is added.
+10. **Closing box:** "Often a very good first draft: to check, adjust and refine" / "An efficient **jumpstarter** and **knowledge gatherer**".
+
+**Details that matter:**
+- `easy_reminder_mail` was checked against PyPI on 2026-10-31 (404), so it names no real package.
+- `at=when + timedelta(days=1)` is a deliberate mistake in `REMINDER`. Nobody spots it in Scene 13, and Scene 14's test catches it.
+- The file order puts the HTML template before `emails/reminder.py`, so the links don't cross.
+
+**Markers:** `request`, `scaffold`, `adapted`, `expert`, `others-work`, `scale`, `limits`, `follow-up`, `jumpstart`.
+
+**Code:**
+- `src/components/Code.tsx`: `CodeLine`, a monospace line with light syntax colors, placed by character column. Leading spaces don't render in `Txt`, so the column carries the indentation.
+- New dependency: `@fontsource/jetbrains-mono`, loaded in `project.ts`.
+
+## 46. Scene 14: agents, from text to action (about 49 s)
+
+**Layout:** the context window on the left, a cog in the middle ("same next-token guesser"), a terminal on the right, and arrows closing the loop.
+
+**What happens:**
+1. **Task:** "Set up the bike shop app. Make sure the tests pass."
+2. **Text gets executed:** "The machine still only writes text…" / "…but now a program **runs that text,** and the result comes back".
+3. **Grounding:** `pytest` fails with "reminder must go out before the booking". The result returns to the context, the machine edits the `+` to a `-`, and `pytest` passes. Caption: "Try, read the result, correct: **grounded in what actually happens**", with "(checks raise confidence, they are not a guarantee)".
+4. **Longer tasks:** 3 quicker rounds (`flask run`, `curl … | grep`, `git commit`). Caption: "Step by step, it walks its way through **longer tasks**".
+5. **Likely guess:** the Scene 4d roulette returns (pytest, git, rm, …) and lands on `rm`. Caption: "Each next token is a **likely guess, not a certainty**".
+6. **Reach:** a dashed "workspace" fence appears around the terminal, with "your emails", "customers’ data" and "the web" outside it. `rm -rf ~/customers-data/` stops at the fence.
+7. **Human:** a dialog, "Allow this command? (deletes all customer data)". Deny is pressed.
+8. **Closing box:** "“Almost right” is fine in a **draft,** risky in an **action**" / "So: limit what it can reach (its “blast radius”), and keep a human in control".
+
+**Markers:** `task`, `command`, `grounding`, `steps`, `stochastic`, `reach`, `human`, `control`.
+
+**Code:** `createRoulette()` in `src/scene4/Output.tsx` takes optional entries. Scene 4d is unchanged, checked with a still.
+
+**Length:** the video is 620.6 s (10 min 21 s). Checked with stills; not yet rendered in full.
+
 ---
 
 ## How to render the full video
@@ -829,6 +886,6 @@ Close any `npm start` editor tab first (not required, but it frees the CPU). The
 npm run video
 ```
 
-This writes `output/project.mp4` (1920×1080, 60 fps, about 8 min 40 s). Expect it to take longer than the earlier 4-minute renders (15–20 minutes).
+This writes `output/project.mp4` (1920×1080, 60 fps, about 10 min 21 s). Expect it to take longer than the earlier 4-minute renders (20–25 minutes).
 
 Alternatively, run `npm start`, open http://localhost:9000, go to Video Settings → Rendering, choose **Video (FFmpeg)** as the exporter, and click **Render**.
