@@ -98,7 +98,8 @@ export default makeScene2D(function* (view) {
   const machine = createRef<Node>();
   const scan = createSignal(SCAN_FROM);
   const scanLine = createRef<Node>();
-  const captions = [createRef<Txt>(), createRef<Txt>()];
+  const title = createRef<Node>();
+  const captions = [createRef<Rect>(), createRef<Rect>()];
   const highlight = createRef<Rect>();
   const vecBoxes: Rect[] = [];
   const matBoxes: Rect[] = [];
@@ -239,8 +240,31 @@ export default makeScene2D(function* (view) {
   );
   view.add(
     <>
-      <Txt ref={captions[0]} y={395} fontFamily={font} fontSize={34} fill={colors.textLight} opacity={0} text={'1 token → d numbers (embedding vector)'} />
-      <Txt ref={captions[1]} y={465} fontFamily={font} fontSize={34} fill={colors.textLight} opacity={0} text={'many weights (gears) → weight matrix'} />
+      <Node ref={title} opacity={0}>
+        <Words
+          y={-450}
+          fontSize={46}
+          parts={[
+            ['Modern language models are', colors.textLight, 700],
+            ['electronic machines,', colors.index, 700],
+            ['not mechanical ones', colors.textLight, 700],
+          ]}
+        />
+      </Node>
+      <Words
+        ref={captions[0]}
+        y={395}
+        fontSize={36}
+        opacity={0}
+        parts={[['Instead of a set of dials, a'], ['vector', colors.textLight, 800], ['of numbers']]}
+      />
+      <Words
+        ref={captions[1]}
+        y={465}
+        fontSize={36}
+        opacity={0}
+        parts={[['Instead of multiple gears (layers),'], ['matrices', colors.textLight, 800], ['of'], ['weights', colors.textLight, 800]]}
+      />
     </>,
   );
 
@@ -439,12 +463,13 @@ export default makeScene2D(function* (view) {
     yield* activity(0, 0.2 * pace);
   }
 
-  // Outlines `boxes` and tints `caption` with the same color, twice.
-  function* flash(boxes: Rect[], caption: Txt, color: string) {
-    for (let i = 0; i < 2; i++) {
-      yield* all(...boxes.map(b => b.opacity(1, 0.25)), caption.fill(color, 0.25));
-      yield* all(...boxes.map(b => b.opacity(0, 0.35)), caption.fill(colors.textLight, 0.35));
-    }
+  // Outlines `boxes` and tints the caption's emphasized words with the same
+  // color, twice. The words keep the color afterwards.
+  function* flash(boxes: Rect[], words: Txt[], color: string) {
+    yield* all(...boxes.map(b => b.opacity(1, 0.25)), ...words.map(w => w.fill(color, 0.25)));
+    yield* all(...boxes.map(b => b.opacity(0, 0.35)), ...words.map(w => w.fill(colors.textLight, 0.35)));
+    yield* all(...boxes.map(b => b.opacity(1, 0.25)), ...words.map(w => w.fill(color, 0.25)));
+    yield* all(...boxes.map(b => b.opacity(0, 0.35)));
   }
 
   // --- 11a: the machine, then numbers ---------------------------------------------------
@@ -454,22 +479,25 @@ export default makeScene2D(function* (view) {
   yield* waitFor(1.5);
 
   yield* waitUntil('x-ray');
-  yield* all(scanLine().opacity(1, 0.3), scan(SCAN_TO, 4.5, linear));
+  yield* all(scanLine().opacity(1, 0.3), title().opacity(1, 0.6), scan(SCAN_TO, 4.5, linear));
   yield* scanLine().opacity(0, 0.3);
   scan(960);
   yield* waitFor(0.3);
 
   // Each caption with what it refers to.
   yield* waitUntil('vectors');
-  yield* all(captions[0]().opacity(1, 0.4), flash(vecBoxes, captions[0](), colors.embedding));
+  const line1 = captions[0]().children() as Txt[];
+  yield* all(captions[0]().opacity(1, 0.4), flash(vecBoxes, [line1[1]], colors.embedding));
   yield* waitFor(0.5);
   yield* waitUntil('matrices');
-  yield* all(captions[1]().opacity(1, 0.4), flash(matBoxes, captions[1](), amber));
+  const line2 = captions[1]().children() as Txt[];
+  yield* all(captions[1]().opacity(1, 0.4), flash(matBoxes, [line2[1], line2[3]], amber));
   yield* waitFor(2);
 
   // --- 11c: on silicon --------------------------------------------------------------------
   yield* waitUntil('silicon');
   yield* all(
+    title().opacity(0, 0.4),
     ...captions.map(c => c().opacity(0, 0.4)),
     machine().position(MACHINE_TOP.position, 0.9, easeInOutCubic),
     machine().scale(MACHINE_TOP.scale, 0.9, easeInOutCubic),

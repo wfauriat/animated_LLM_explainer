@@ -805,6 +805,20 @@ User decisions:
 
 **Length:** Scene 12 is 61.77 s (planned about 50 s, trimmed from 64 s); the video is 519.6 s (8 min 40 s). Checked with stills, including Scenes 2 and 5b after the shared changes; not yet rendered in full.
 
+# Day 6 — 2026-10-31
+
+## 43. Scene 11: clearer header and captions
+
+User request: make the X-ray step more explicit, and the captions less schematic.
+
+- **Header:** "Modern language models are **electronic machines,** not mechanical ones" (46 px, y −450, "electronic machines," in the scan line's cyan). It fades in as the scan starts and fades out at `silicon`, because the machine moves up into that space.
+- **Captions** (36 px, in the `Words` helper so single words can be emphasized):
+  - "Instead of a set of dials, a **vector** of numbers"
+  - "Instead of multiple gears (layers), **matrices** of **weights**"
+- **Flash:** the outlines are unchanged. Only the emphasized words now tint with them (lavender, then amber), and they keep the color afterwards. A scale pulse was tried first, but it closed the spaces around the words.
+
+**Length:** unchanged (Scene 11 is 38.35 s, markers unchanged). Checked with stills; not yet rendered in full.
+
 ---
 
 ## How to render the full video

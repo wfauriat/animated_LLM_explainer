@@ -308,3 +308,43 @@ display "non-aligned text completor" would now say "aligned model (helpful assis
 The, as the last section of the scene, the user would then ask again (just after 
 the app screen gets cleaned), and he would then get a proper response (not text
 continuation).
+
+-- Sequence / scene 13
+Here is the message to convey. Not exactly sure of how to turn it into a visualization.
+You can make proposals. I'll also try to propose something.
+Here is the message. "Why [not "how" but "why" this time] do large language models
+(LLMs) work apparantly so well? (a proposed interpretation)". They work well
+and "seem" (emphasize) like intelligent agents, mostly because :
+1 : the have been trained on a gigantic amount of examples, slightly different yet
+analogous contexts, thousand of peoples working on "almost" the same problem ( maths
+problems, boilerplate code, typical writting style, etc...), so it is very good
+at gathering (or integrating), "other people's work" (to start from, almost the
+best of what exists, in most domains, whith available examples)
+2 : the scale of the machinery is gigantic too (hard for someone to wrap one's head
+around), and training acts on billions on knobs, progressively, until the next-
+token guesser gets very good, in a enormous amount of different contexts
+3 : so it produces "almost appropriate answers", extremely rapidly and with a ratio
+ "quality of content" / "speed", that is very hard to match even for trained experts.
+4 : however there can be no guarantee on quality or truthfullness : "almost adapted,
+often a very good first start, often much better than un-aided human production,
+often with need of adjusting, or progressive refinement of intent or context, with
+follow ups : so an efficient and helpful jumpstarter and knowledge gatherer.
+Ok so this was the message. Here's a suggestion at visualizing it. 
+A rather vague but technical request (e.g. produce boilerplate code to set up
+an app scaffold) : so that a significant amound of "rigorous-looking" text (because
+of formating and formal constraint following) possibly spaning a few files (the 
+files hierarchy of the scaffold) : here a case where a LLM aided
+jumpstart is very good. An other example could be the produced unix command to 
+carry out a relatively complex procedure (for example piping various commands), 
+which would be a more technical example (more involved for the layman), but also
+a segway into agentic behaviour : that is, the model can suggest formated commands,
+execute them, so as to act and gain reach (in a software environement). In this
+latter example, the "almost good" production opens the door for discussion on
+necessity for blast radius control, and also the discussion on "grounding" (the
+ability for the agent to test, and act sequentially, reading logs, walking it's
+way slowly to accomplish a complex task). I admit, that is a lot of notions
+and visualization possibility for just one scene. Let us talk about starting simple,
+and maybe building a first clear and layman friendly message, and possible one
+or two follow up slide (possibly opening on agency in software space, automation,
+and the need for control of stochastic (thus non perfctly anticipable) generated
+content, inherent for the generative machine that is the modern LLMs)
