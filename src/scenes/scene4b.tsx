@@ -16,7 +16,9 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
-import {colors, font} from '../theme';
+import {Backdrop} from '../components/Titles';
+import {rise} from '../motion';
+import {colors, font, type} from '../theme';
 import {createCompassStack, dialIn, popStack} from '../scene4/Compass';
 import {
   CHIP_W,
@@ -31,6 +33,8 @@ import {
   FOLDED_SCALE,
   IDS,
   INDEX_X,
+  MACHINE_FIT,
+  MACHINE_Y,
   rowY,
   SPINE_H,
   SPINE_Y,
@@ -64,9 +68,12 @@ export default makeScene2D(function* (view) {
   stacks.forEach((s, i) => s.node.position([CORE_IN_X, CORE_ROWS[i].y]).opacity(0));
   const ellipsis = createRef<Txt>();
   const spineLabel = createRef<Txt>();
+  const dimsNote = createRef<Rect>();
 
   view.add(
     <>
+      <Backdrop />
+      <Node scale={MACHINE_FIT} y={MACHINE_Y}>
       {input.node}
       {copy}
       {big.node}
@@ -103,6 +110,11 @@ export default makeScene2D(function* (view) {
         opacity={0}
       />
       {label}
+      <Rect ref={dimsNote} layout direction={'column'} alignItems={'center'} gap={6} x={290} y={320} opacity={0}>
+        <Txt fontFamily={font} {...type.body} fontWeight={500} fill={colors.textLight} text={'one dial per dimension'} />
+        <Txt fontFamily={font} {...type.small} fill={colors.textMuted} text={'768 of them, in a small model'} />
+      </Rect>
+      </Node>
     </>,
   );
 
@@ -137,11 +149,12 @@ export default makeScene2D(function* (view) {
     big.node.scale(1, 1.0, easeOutCubic),
   );
   yield* dialIn(big, anglesOf(id), 1.4, 0.3, 2);
-  yield* waitFor(2.5);
+  yield* rise(dimsNote());
+  yield* waitFor(1.2);
 
   // --- Fold the block; every row gets its own stack -----------------------
   yield* waitUntil('fold');
-  yield* all(big.node.opacity(0, 0.6), big.node.scale(0.6, 0.6));
+  yield* all(big.node.opacity(0, 0.6), big.node.scale(0.6, 0.6), dimsNote().opacity(0, 0.4));
   const fold = 1.4;
   yield* all(
     slab().position([EMBED_X, SPINE_Y], fold, easeInOutCubic),
@@ -187,5 +200,6 @@ export default makeScene2D(function* (view) {
     }),
   );
   yield* ellipsis().opacity(1, 0.5);
-  yield* waitFor(2);
+  yield* waitFor(1);
+  yield* waitUntil('scene-end');
 });

@@ -2,17 +2,15 @@
 // question, it carries on with a poem. We open the server again and fine-tune
 // the same notches on examples of good answers, and the same question now gets
 // a proper reply. It is still a next-token guesser.
-import {Circle, Line, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
+import {Line, makeScene2D, Node, Rect, Txt} from '@motion-canvas/2d';
 import {
   all,
   cancel,
   chain,
   createRef,
   createSignal,
-  delay,
   easeInCubic,
   easeInOutCubic,
-  easeOutBack,
   easeOutCubic,
   linear,
   range,
@@ -21,6 +19,7 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
 import {
   bubbleText,
   blinkCaret,
@@ -30,7 +29,7 @@ import {
   popOut,
   userSends,
 } from '../components/ChatApp';
-import {createTunableCog, driveCogs, turnNotch} from '../components/Cog';
+import {correctionWave, createTunableCog, driveCogs, TunableCog} from '../components/Cog';
 import {createNetwork} from '../components/Network';
 import {
   COVER_Y,
@@ -42,7 +41,9 @@ import {
   Server,
 } from '../components/Server';
 import {createRoom} from '../components/UserRoom';
+import {emphasis, Takeaway} from '../components/Titles';
 import {Words} from '../components/Words';
+import {rise, settle} from '../motion';
 import {
   CAVITY_CENTER,
   COVER_ASIDE_SCALE,
@@ -54,7 +55,7 @@ import {
   SERVER_CLOSE,
   SOCKET_Y,
 } from '../layout';
-import {colors, font} from '../theme';
+import {colors, font, type} from '../theme';
 
 const QUESTION = 'Why is the sky blue?';
 const POEM = [
@@ -127,7 +128,7 @@ function ExampleCard({n, question, answer, width}: {n: number; question: string;
     >
       <Rect alignItems={'center'} gap={12}>
         <FileIcon />
-        <Txt fontFamily={font} fontSize={22} fill={colors.textMuted} text={`example_${n}.txt`} />
+        <Txt fontFamily={font} {...type.small} fill={colors.textMuted} text={`example_${n}.txt`} />
       </Rect>
       {q.row}
       {a.row}
@@ -217,7 +218,7 @@ export default makeScene2D(function* (view) {
         ref={status}
         layout
         x={STATUS_SPLIT_X}
-        y={-470}
+        y={-456}
         padding={[14, 30]}
         radius={14}
         fill={colors.machineBg}
@@ -225,17 +226,17 @@ export default makeScene2D(function* (view) {
         lineWidth={3}
         opacity={0}
       >
-        <Txt ref={statusText} fontFamily={font} fontSize={36} fontWeight={600} fill={colors.ledRaw} text={NON_ALIGNED} />
+        <Txt ref={statusText} fontFamily={font} {...type.heading} fill={colors.ledRaw} text={NON_ALIGNED} />
       </Rect>
       <Rect ref={heading} layout direction={'column'} alignItems={'center'} gap={8} x={CARD_AT.x} y={-345} opacity={0}>
-        <Txt fontFamily={font} fontSize={38} fontWeight={600} fill={colors.textLight} text={'Fine-tuning on examples of good answers'} />
+        <Txt fontFamily={font} {...type.heading} fontSize={36} fill={colors.textLight} text={'Fine-tuning on examples of good answers'} />
         <Txt fontFamily={font} fontSize={26} fill={colors.textMuted} text={'(supervised fine-tuning, SFT)'} />
       </Rect>
       {sheets}
       {cards}
       <Rect ref={note} layout direction={'column'} alignItems={'center'} gap={8} x={CARD_AT.x} y={165} opacity={0}>
-        <Txt fontFamily={font} fontSize={32} fill={colors.textLight} text={'same machine, same cogs'} />
-        <Txt fontFamily={font} fontSize={32} fill={colors.textLight} text={'far fewer examples, small nudges'} />
+        <Txt fontFamily={font} {...type.body} fill={colors.textLight} text={'same machine, same cogs'} />
+        <Txt fontFamily={font} {...type.body} fill={colors.textLight} text={'far fewer examples, small nudges'} />
       </Rect>
       <Rect ref={policy} x={CARD_AT.x} y={280} opacity={0}>
         <Words
@@ -248,60 +249,30 @@ export default makeScene2D(function* (view) {
           ]}
         />
       </Rect>
-      <Rect
+      <Takeaway
         ref={closing}
-        layout
-        direction={'column'}
-        alignItems={'center'}
-        gap={12}
         y={170}
-        padding={[26, 46]}
-        radius={18}
-        fill={'#1a1608'}
-        stroke={colors.energy}
-        lineWidth={4}
-        opacity={0}
-      >
-        <Txt fontFamily={font} fontSize={42} fontWeight={700} fill={colors.energy} text={'Still a next-token guesser:'} />
-        <Txt fontFamily={font} fontSize={36} fontWeight={600} fill={colors.textLight} text={'now the likely next tokens are a helpful answer'} />
-      </Rect>
-      <Rect ref={fade} width={'100%'} height={'100%'} fill={'#000'} />
+        lines={[[emphasis('Still a next-token guesser')], [['Now, the likely next tokens are a helpful answer']]]}
+      />
+      <Rect ref={fade} width={'100%'} height={'100%'} fill={colors.machineBg} />
     </>,
   );
 
   // Correction signal from the examples: each notch turns a little as the
   // signal reaches it.
   function* nudge(size: number, n: number, pace: number) {
-    const front = createSignal(20);
-    const opacity = createSignal(0);
-    const travel = 1.2 * pace;
-    const arcs = [0, 1, 2].map(
-      i =>
-        (
-          <Circle
-            position={SIGNAL_FROM}
-            size={() => Math.max(0, front() - i * 36) * 2}
-            startAngle={120}
-            endAngle={240}
-            stroke={colors.error}
-            lineWidth={6}
-            lineCap={'round'}
-            opacity={() => opacity() * (1 - i * 0.3)}
-          />
-        ) as Circle,
-    );
-    waves().add(arcs);
-    const turns = cogs.map((c, k) => {
-      const d = c.node.position().sub(SIGNAL_FROM).magnitude - COG_R;
-      const pull = Math.sin(k * 2.4 + n * 1.7);
-      return delay((d / REACH) * travel, turnNotch(c, pull * size, 0.5 * pace, traces()));
+    yield* correctionWave({
+      waves: waves(),
+      traces: traces(),
+      from: SIGNAL_FROM,
+      arc: [120, 240],
+      reach: REACH,
+      travel: 1.2 * pace,
+      width: 6,
+      start: 20,
+      turnTime: 0.5 * pace,
+      turns: cogs.map((c, k): [TunableCog, number] => [c, Math.sin(k * 2.4 + n * 1.7) * size]),
     });
-    yield* all(
-      front(REACH, travel, linear),
-      chain(opacity(1, 0.15), waitFor(travel - 0.4), opacity(0, 0.25)),
-      ...turns,
-    );
-    arcs.forEach(a => a.remove());
   }
 
   function* intake(card: Rect, hold: number) {
@@ -342,7 +313,7 @@ export default makeScene2D(function* (view) {
     room.chat,
     POEM.map(line => <Txt {...bubbleText} fontStyle={'italic'}>{line}</Txt>),
   );
-  yield* waitFor(2.8);
+  yield* waitFor(1.8);
 
   yield* waitUntil('server');
   yield* all(
@@ -381,27 +352,27 @@ export default makeScene2D(function* (view) {
 
   // --- Examples of good answers: the notches get nudged -----------------------
   yield* waitUntil('examples');
-  yield* heading().opacity(1, 0.5);
-  yield* intake(cards[0], 1.7);
+  yield* rise(heading());
+  yield* intake(cards[0], 1.3);
   yield nudge(20, 0, 1);
-  yield* intake(cards[1], 1.7);
+  yield* intake(cards[1], 1.3);
   yield nudge(20, 1, 1);
-  yield* intake(cards[2], 1.5);
+  yield* intake(cards[2], 1.1);
   yield nudge(20, 2, 1);
-  yield* intake(cards[3], 3);
+  yield* intake(cards[3], 2.2);
   yield* nudge(20, 3, 1);
 
   yield* waitUntil('more-examples');
   yield* all(
-    note().opacity(1, 0.5),
+    rise(note()),
     sequence(0.16, ...sheets.map(flySheet)),
     chain(nudge(9, 4, 0.7), nudge(9, 5, 0.7), nudge(9, 6, 0.7)),
   );
   yield* waitFor(0.5);
 
   yield* waitUntil('policy');
-  yield* policy().opacity(1, 0.5);
-  yield* waitFor(2.2);
+  yield* rise(policy());
+  yield* waitFor(1.4);
 
   // --- The cover goes back on: same machine, new behaviour --------------------
   yield* waitUntil('aligned');
@@ -456,10 +427,13 @@ export default makeScene2D(function* (view) {
   yield* waitUntil('answer');
   yield* botTyping(room.chat, 1.2);
   yield* botReplies(room.chat, ANSWER);
-  yield* waitFor(2.6);
+  yield* waitFor(1.6);
 
   yield* waitUntil('still-guessing');
-  closing().scale(0.9);
-  yield* all(closing().opacity(1, 0.5), closing().scale(1, 0.6, easeOutCubic));
-  yield* waitFor(4);
+  yield* settle(closing());
+  yield* waitFor(2.5);
+  yield* waitUntil('scene-end');
+
+  // Clear the stage for Scene 13.
+  yield* fade().opacity(1, 0.8);
 });

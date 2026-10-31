@@ -132,7 +132,8 @@ export function createDictionary(): Dictionary {
       lineWidth={4}
     />
     <Node ref={content}>
-      <Txt {...text} y={-PANEL_H / 2 + 50} fontSize={34} fontWeight={600} text={'Dictionary'} />
+      <Txt {...text} y={-PANEL_H / 2 + 44} fontSize={34} fontWeight={600} text={'Dictionary'} />
+      <Txt {...text} y={-PANEL_H / 2 + 84} fontSize={22} text={'about 50,000 tokens'} />
       <Rect y={WINDOW_Y} width={WINDOW_W} height={WINDOW_H} clip>
         <Rect
           ref={band}

@@ -7,27 +7,31 @@
     },
     {
       "name": "cable",
-      "targetTime": 2.7
+      "targetTime": 4.483
     },
     {
       "name": "split",
-      "targetTime": 6.4
+      "targetTime": 8.267
     },
     {
       "name": "server",
-      "targetTime": 8.2
+      "targetTime": 10.569
     },
     {
       "name": "battery",
-      "targetTime": 10.85
+      "targetTime": 16.033
     },
     {
       "name": "user-wire",
-      "targetTime": 13.75
+      "targetTime": 18.933
     },
     {
       "name": "many-users",
-      "targetTime": 16.55
+      "targetTime": 21.976
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 26.976
     }
   ],
   "seed": 3555362287

@@ -8,6 +8,7 @@ import {colors, font} from '../theme';
 import {
   CHIP_W,
   FOLDED_SCALE,
+  GEN_LABEL_X,
   LABEL_SCALE,
   N1_X,
   N1_Y,
@@ -173,7 +174,7 @@ export function createOutput(done: boolean): Output {
     }),
   );
   const genLabel = makeLabel('Generative pick');
-  genLabel.position([WORDS_X, OUT_LABEL_Y]).scale(LABEL_SCALE).opacity(show);
+  genLabel.position([GEN_LABEL_X, OUT_LABEL_Y]).scale(LABEL_SCALE).opacity(show);
 
   // N+1: from the picked word, down the right edge, along the bottom, and up
   // into the "?" slot of the input column.

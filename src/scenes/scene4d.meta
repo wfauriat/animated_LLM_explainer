@@ -7,31 +7,35 @@
     },
     {
       "name": "last-row",
-      "targetTime": 1.5
+      "targetTime": 2.431
     },
     {
       "name": "top5",
-      "targetTime": 2.7
+      "targetTime": 7.156
     },
     {
       "name": "lookup",
-      "targetTime": 6.58
+      "targetTime": 13.161
     },
     {
       "name": "generative",
-      "targetTime": 10.53
+      "targetTime": 17.885
     },
     {
       "name": "spin",
-      "targetTime": 12.03
+      "targetTime": 28.765
     },
     {
       "name": "pick",
-      "targetTime": 18.63
+      "targetTime": 34.665
     },
     {
       "name": "n+1",
-      "targetTime": 20.93
+      "targetTime": 36.965
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 42.965
     }
   ],
   "seed": 2607525392

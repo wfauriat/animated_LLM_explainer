@@ -7,15 +7,19 @@
     },
     {
       "name": "close-up",
-      "targetTime": 1.1
+      "targetTime": 2.061
     },
     {
       "name": "fold",
-      "targetTime": 9.299999999999999
+      "targetTime": 15.874
     },
     {
       "name": "rows",
-      "targetTime": 11.299999999999999
+      "targetTime": 20.398
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 25.288
     }
   ],
   "seed": 909126764

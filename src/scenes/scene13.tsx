@@ -14,8 +14,8 @@ import {
   delay,
   easeInCubic,
   easeInOutCubic,
-  easeOutBack,
   easeOutCubic,
+  fadeTransition,
   linear,
   range,
   sequence,
@@ -24,12 +24,14 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
 import {codeWidth, CodeLine, mono} from '../components/Code';
-import {createTunableCog, driveCogs, turnNotch} from '../components/Cog';
+import {correctionWave, createTunableCog, driveCogs, TunableCog} from '../components/Cog';
 import {popIn} from '../components/ChatApp';
-import {Words} from '../components/Words';
+import {Backdrop, Caption, emphasis, Takeaway} from '../components/Titles';
 import {positionIn} from '../layout';
-import {colors, font} from '../theme';
+import {rise, settle} from '../motion';
+import {CAPTION_Y, colors, font, type, windowDots} from '../theme';
 import {FILES, IMPORT_FIXED, IMPORT_WRONG, REMINDER} from '../scene13/parts';
 
 const amber = colors.energy;
@@ -37,14 +39,14 @@ const amberOff = '#f2c14e00';
 
 // --- Layout ---------------------------------------------------------------------
 
-const TITLE_TOP = {y: -488, scale: 0.62};
+const TITLE_TOP = {y: -442, scale: 0.68};
 const LEFT_X = -630; // the request and the person
-const EDITOR = {x: 300, y: -40, w: 1180, h: 740};
+const EDITOR = {x: 300, y: -30, w: 1180, h: 720};
 const EDITOR_TOP = EDITOR.y - EDITOR.h / 2;
 const SIDEBAR_W = 340;
 // The file tree: inside the editor, then on its own at the left of the frame.
 const TREE_IN_EDITOR = -272;
-const TREE_ALONE = -900;
+const TREE_ALONE = -860;
 const TREE_TOP = -300;
 const TREE_PITCH = 58;
 const TREE_SIZE = 20;
@@ -62,10 +64,10 @@ const CLOSE_SIZE = 24;
 const closeY = (line: number) => CODE_TOP + 30 + line * CLOSE_PITCH;
 const FLAGGED = 1; // the import line of REMINDER
 const CAPTION_X = EDITOR.x;
-const CAPTIONS_Y = [405, 465];
+const CENTER_CAPTION_Y = 426; // a lone caption, over the whole frame
 
 // Stacks of people's work, one per file.
-const STACK_X = -540;
+const STACK_X = -510;
 const STACK_STEP = 15;
 const SHEET = {w: 40, h: 50};
 const THIN = FILES.findIndex(f => f.path === 'emails/reminder.py');
@@ -186,6 +188,7 @@ export default makeScene2D(function* (view) {
   const lineW = (text: string) => codeWidth(text.length, CLOSE_SIZE) + 20;
 
   // --- Captions --------------------------------------------------------------------
+  const sheetNote = createRef<Txt>();
   const adapted = createRef<Rect>();
   const expert = createRef<Rect>();
   const others = createRef<Rect>();
@@ -193,11 +196,11 @@ export default makeScene2D(function* (view) {
   const limits = createRef<Rect>();
   const followUp = createRef<Rect>();
   const closing = createRef<Rect>();
-  const fade = createRef<Rect>();
   const links = createRef<Node>();
 
   view.add(
     <>
+      <Backdrop />
       {/* The person, at the left */}
       <Node ref={person} opacity={0}>
         <Rect x={LEFT_X} y={80} width={400} height={230} radius={12} fill={colors.appBg} stroke={colors.bezelEdge} lineWidth={8} />
@@ -223,7 +226,7 @@ export default makeScene2D(function* (view) {
         <Rect x={EDITOR.x} y={EDITOR.y} width={EDITOR.w} height={EDITOR.h} radius={14} fill={colors.appBg} stroke={colors.bezelEdge} lineWidth={3} />
         <Rect x={EDITOR.x - EDITOR.w / 2 + SIDEBAR_W / 2} y={EDITOR.y + 22} width={SIDEBAR_W} height={EDITOR.h - 46} fill={colors.appHeader} />
         <Rect x={EDITOR.x} y={EDITOR_TOP + 22} width={EDITOR.w - 4} height={42} radius={[12, 12, 0, 0]} fill={colors.titleBar} />
-        {['#ff5f57', '#febc2e', '#28c840'].map((c, i) => (
+        {windowDots.map((c, i) => (
           <Circle x={EDITOR.x - EDITOR.w / 2 + 28 + i * 24} y={EDITOR_TOP + 22} size={14} fill={c} />
         ))}
       </Node>
@@ -232,6 +235,7 @@ export default makeScene2D(function* (view) {
       <Node ref={stacks}>
         {FILES.flatMap((f, r) => range(f.examples).map(i => <Sheet i={i} row={r} shown={shown[r]} />))}
       </Node>
+      <Txt ref={sheetNote} x={STACK_X - SHEET.w / 2} y={rowY(0) + 6} offsetX={-1} fontFamily={font} {...type.label} fill={colors.label} text={'each sheet: someone’s published work'} opacity={0} />
 
       {/* The code pane (title, then one set of lines per file) */}
       <Node ref={pane} opacity={0}>
@@ -267,7 +271,7 @@ export default makeScene2D(function* (view) {
           y={closeY(FLAGGED) - 8}
           padding={[6, 12]}
           radius={10}
-          fill={'#1a1608'}
+          fill={colors.takeawayBg}
           stroke={amber}
           lineWidth={3}
           opacity={0}
@@ -347,7 +351,7 @@ export default makeScene2D(function* (view) {
         <Node ref={traces} />
       </Node>
       <Rect ref={knobsLabel} layout x={GRID.x} y={GRID.y - 275} opacity={0}>
-        <Txt fontFamily={font} fontSize={40} fontWeight={700} fill={amber} text={'billions of knobs'} />
+        <Txt fontFamily={font} {...type.title} fontSize={40} fill={amber} text={'billions of knobs'} />
       </Rect>
       <Node ref={flying} />
 
@@ -370,39 +374,20 @@ export default makeScene2D(function* (view) {
       </Rect>
 
       {/* Captions */}
-      <Words ref={adapted} x={CAPTION_X} y={CAPTIONS_Y[0]} fontSize={36} gap={10} opacity={0} parts={[['From an intent to an answer'], ['adapted to the need,', amber, 700], ['in almost no time']]} />
-      <Words ref={expert} x={CAPTION_X} y={CAPTIONS_Y[1]} fontSize={30} gap={8} opacity={0} parts={[['A trained expert may do better in places, but rarely this fast', colors.textMuted]]} />
-      <Words ref={others} x={0} y={CAPTIONS_Y[0] + 25} fontSize={36} gap={10} opacity={0} parts={[['Thousands of people have solved'], ['almost the same problems:', amber, 700], ['it integrates their work']]} />
-      <Words ref={knobs} x={0} y={CAPTIONS_Y[0] + 25} fontSize={36} gap={10} opacity={0} parts={[['Tuned step by step, until it guesses well in'], ['an enormous number of contexts', amber, 700]]} />
-      <Words ref={limits} x={0} y={CAPTIONS_Y[0] + 25} fontSize={40} gap={12} opacity={0} parts={[['Likely right,'], ['never guaranteed', amber, 700]]} />
-      <Rect
+      <Caption ref={adapted} x={CAPTION_X} y={CAPTION_Y[0]} parts={[['From an intent to an answer'], emphasis('adapted to the need,'), ['in almost no time']]} />
+      <Caption ref={expert} x={CAPTION_X} y={CAPTION_Y[1]} quiet parts={[['A trained expert may do better in places, but rarely this fast']]} />
+      <Caption ref={others} y={CENTER_CAPTION_Y} parts={[['Thousands of people have solved'], emphasis('almost the same problems:'), ['it integrates their work']]} />
+      <Caption ref={knobs} y={CENTER_CAPTION_Y} parts={[['Tuned step by step, until it guesses well in'], emphasis('an enormous number of contexts')]} />
+      <Caption ref={limits} y={CENTER_CAPTION_Y} parts={[['Likely right,'], emphasis('never guaranteed')]} />
+      <Takeaway
         ref={closing}
-        layout
-        direction={'column'}
-        alignItems={'center'}
-        gap={8}
-        y={445}
-        padding={[18, 40]}
-        radius={18}
-        fill={'#1a1608'}
-        stroke={amber}
-        lineWidth={4}
-        opacity={0}
-      >
-        <Txt fontFamily={font} fontSize={34} fontWeight={600} fill={colors.textLight} text={'Often a very good first draft: to check, adjust and refine'} />
-        <Words
-          fontSize={38}
-          gap={10}
-          parts={[
-            ['An efficient', colors.textLight, 600],
-            ['jumpstarter', amber, 800],
-            ['and', colors.textLight, 600],
-            ['knowledge gatherer', amber, 800],
-          ]}
-        />
-      </Rect>
+        lines={[
+          [['An efficient'], emphasis('jumpstarter'), ['and'], emphasis('knowledge gatherer')],
+          [['Often a very good first draft: to check, adjust and refine']],
+        ]}
+      />
 
-      <Rect ref={title} layout direction={'column'} alignItems={'center'} gap={10} y={0}>
+      <Rect ref={title} layout direction={'column'} alignItems={'center'} gap={10} y={0} opacity={0}>
         <Rect alignItems={'baseline'} gap={18}>
           <Txt fontFamily={font} fontSize={64} fontWeight={700} fill={colors.textLight} text={'Why do language models'} />
           <Txt fontFamily={font} fontSize={64} fontWeight={700} fontStyle={'italic'} fill={amber} text={'seem'} />
@@ -410,12 +395,12 @@ export default makeScene2D(function* (view) {
         </Rect>
         <Txt fontFamily={font} fontSize={34} fill={colors.textMuted} text={'(a proposed interpretation)'} />
       </Rect>
-      <Rect ref={fade} width={1920} height={1080} fill={'#000'} />
     </>,
   );
 
   yield clock(1000, 1000, linear);
   yield driveCogs(cogs);
+  yield* fadeTransition(0.5);
 
   // --- Helpers ---------------------------------------------------------------------
 
@@ -473,42 +458,30 @@ export default makeScene2D(function* (view) {
 
   // A wave of small corrections across the knobs (as in Scenes 9, 10, 12).
   function* nudge(size: number, n: number) {
-    const front = createSignal(20);
-    const opacity = createSignal(0);
-    const travel = 0.9;
-    const arcs = [0, 1, 2].map(
-      i =>
-        (
-          <Circle
-            position={SIGNAL_FROM}
-            size={() => Math.max(0, front() - i * 36) * 2}
-            startAngle={-60}
-            endAngle={60}
-            stroke={colors.error}
-            lineWidth={5}
-            lineCap={'round'}
-            opacity={() => opacity() * (1 - i * 0.3)}
-          />
-        ) as Circle,
-    );
-    waves().add(arcs);
-    const turns = cogs.map((c, k) => {
-      const d = c.node.position().sub(SIGNAL_FROM).magnitude;
-      return delay((d / REACH) * travel, turnNotch(c, Math.sin(k * 2.4 + n * 1.7) * size, 0.4, traces()));
+    yield* correctionWave({
+      waves: waves(),
+      traces: traces(),
+      from: SIGNAL_FROM,
+      arc: [-60, 60],
+      reach: REACH,
+      travel: 0.9,
+      width: 5,
+      start: 20,
+      turnTime: 0.4,
+      turns: cogs.map((c, k): [TunableCog, number] => [c, Math.sin(k * 2.4 + n * 1.7) * size]),
     });
-    yield* all(front(REACH, travel, linear), chain(opacity(1, 0.15), waitFor(travel - 0.35), opacity(0, 0.2)), ...turns);
-    arcs.forEach(a => a.remove());
   }
 
   // --- The question ---------------------------------------------------------------
-  yield* fade().opacity(0, 0.7);
+  yield* waitUntil('title');
+  yield* rise(title(), 0.8);
   yield* waitFor(0.6);
 
   // --- One request ... --------------------------------------------------------------
   yield* waitUntil('request');
   yield* all(title().y(TITLE_TOP.y, 0.8, easeInOutCubic), title().scale(TITLE_TOP.scale, 0.8, easeInOutCubic));
   yield* popIn(request());
-  yield* waitFor(2.6);
+  yield* waitFor(1.6);
 
   // --- ... a whole scaffold, in a moment --------------------------------------------
   yield* waitUntil('scaffold');
@@ -525,7 +498,7 @@ export default makeScene2D(function* (view) {
   // --- Adapted to the request -------------------------------------------------------
   yield* waitUntil('adapted');
   const targets: [number, number][] = [[0, 0], [1, 5], [2, 6]]; // phrase, tree row
-  yield* adapted().opacity(1, 0.5);
+  yield* rise(adapted());
   yield* sequence(
     0.7,
     ...targets.map(([p, r]) =>
@@ -544,10 +517,10 @@ export default makeScene2D(function* (view) {
     ...links().children().map(l => l.opacity(0, 0.4)),
     ...rowMarks.map(m => m().opacity(0, 0.4)),
     ...phrases.map(p => p.fill(amberOff, 0.4)),
-    expert().opacity(1, 0.5),
+    rise(expert()),
   );
   links().removeChildren();
-  yield* waitFor(3);
+  yield* waitFor(1.6);
 
   // --- Why: other people's work -------------------------------------------------------
   yield* waitUntil('others-work');
@@ -564,18 +537,20 @@ export default makeScene2D(function* (view) {
     ...rowRefs.map((r, i) => (i === 0 ? r().opacity(0, 0.4) : r().fill(colors.textLight, 0.4))),
   );
   yield* all(
-    others().opacity(1, 0.5),
+    rise(others()),
+    sheetNote().opacity(1, 0.5),
     ...shown.map((s, r) => s(FILES[r].examples, 2.2, easeOutCubic)),
   );
-  yield* waitFor(3);
+  yield* waitFor(1.6);
 
   // --- Why: the scale of the machine ------------------------------------------------
   yield* waitUntil('scale');
   yield* all(
     others().opacity(0, 0.4),
+    sheetNote().opacity(0, 0.4),
     grid().opacity(1, 0.6),
     knobsLabel().opacity(1, 0.6),
-    knobs().opacity(1, 0.6),
+    rise(knobs()),
   );
   yield* all(
     sequence(0.09, ...range(40).map(flySheet)),
@@ -593,10 +568,10 @@ export default makeScene2D(function* (view) {
   );
   yield* close().opacity(1, 0.5);
   yield* waitFor(0.8);
-  yield* all(flag().opacity(1, 0.4), flagNote().opacity(1, 0.4), limits().opacity(1, 0.5));
+  yield* all(flag().opacity(1, 0.4), flagNote().opacity(1, 0.4), rise(limits()));
   yield* waitFor(1);
   yield* all(thinNote().opacity(1, 0.4), rowMarks[THIN + 1]().opacity(1, 0.4));
-  yield* waitFor(3);
+  yield* waitFor(1.6);
 
   // --- Check, follow up, refine -------------------------------------------------------
   yield* waitUntil('follow-up');
@@ -619,10 +594,10 @@ export default makeScene2D(function* (view) {
   yield* waitFor(1.5);
 
   yield* waitUntil('jumpstart');
-  closing().scale(0.9);
-  yield* all(closing().opacity(1, 0.5), closing().scale(1, 0.6, easeOutBack));
-  yield* waitFor(4.5);
+  yield* settle(closing());
+  yield* waitFor(2.5);
+  yield* waitUntil('scene-end');
 
   // Clear the stage for Scene 14.
-  yield* all(...view.children().filter(c => c !== fade()).map(c => c.opacity(0, 0.8)));
+  yield* all(...view.children().map(c => c.opacity(0, 0.8)));
 });

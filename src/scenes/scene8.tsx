@@ -12,7 +12,6 @@ import {
   createSignal,
   easeInOutCubic,
   easeInOutSine,
-  easeOutBack,
   range,
   sequence,
   SimpleSignal,
@@ -20,8 +19,11 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
 import {Cog, cogTexture, createTunableCog, driveCogs, TunableCog} from '../components/Cog';
-import {colors, font} from '../theme';
+import {Backdrop, emphasis, Takeaway} from '../components/Titles';
+import {settle} from '../motion';
+import {colors, font, safe, type} from '../theme';
 import {CHIP_W} from '../scene4/layout';
 import {makeChip} from '../scene4/parts';
 
@@ -215,12 +217,13 @@ export default makeScene2D(function* (view) {
     heads: createSignal(MODELS[0].heads),
     dim: createSignal(MODELS[0].dim),
   };
-  const texture = cogTexture(CY, SLAB.cog, SLAB.front);
+  const texture = cogTexture(SLAB_T, SLAB.cog, SLAB.front);
   const slabs = range(GPT3.layers).map(i => slab(i, size, texture));
   const today = outline(X0, XT, HT, DT);
   const gpt3Tag = createRef<Txt>();
 
   const world = createRef<Node>();
+  view.add(<Backdrop />);
   view.add(
     <Node ref={world} scale={SHOT_COG.scale} position={SHOT_COG.position}>
       {today}
@@ -334,8 +337,7 @@ export default makeScene2D(function* (view) {
         <Txt
           position={FOCUS_ON.addY(-arcR - 80)}
           fontFamily={font}
-          fontSize={52}
-          fontWeight={600}
+          {...type.title}
           fill={colors.textLight}
           text={'adjustable weight (effect)'}
           opacity={0}
@@ -346,6 +348,7 @@ export default makeScene2D(function* (view) {
         <Txt {...depthTxt} position={depthAt((PLANES + FAR) / 2)} text={'⋰'} />
         <Node ref={arcLayer} />
         {tokens}
+        <Txt x={-safe.x} offsetX={-1} y={safe.y - 24} fontFamily={font} {...type.small} fill={colors.textMuted} text={'each cog drawn stands for about a thousand weights'} />
       </Node>
       <Node ref={axes} opacity={0}>
         <Txt
@@ -368,7 +371,7 @@ export default makeScene2D(function* (view) {
           text={() => `embedding dimension ${n(size.dim)}`}
         />
       </Node>
-      <Node ref={counter} position={[880, 400]} opacity={0}>
+      <Node ref={counter} position={[safe.x, 396]} opacity={0}>
         <Txt ref={number} offsetX={1} fontFamily={font} fontSize={68} fontWeight={600} fill={colors.textLight} text={() => fmt(count())} />
         <Txt ref={magnitude} offsetX={1} fontFamily={font} fontSize={68} fontWeight={600} fill={colors.textLight} text={'hundreds of billions'} opacity={0} />
         <Rect layout offset={[1, 0]} y={62} alignItems={'end'} gap={14}>
@@ -377,22 +380,13 @@ export default makeScene2D(function* (view) {
           <Txt ref={year} fontFamily={font} fontSize={22} fill={colors.textMuted} text={''} marginBottom={3} />
         </Rect>
       </Node>
-      <Rect
+      <Takeaway
         ref={summary}
-        layout
-        y={420}
-        padding={[22, 40]}
-        radius={20}
-        fill={colors.appBg}
-        stroke={colors.label}
-        lineWidth={2}
-        opacity={0}
-      >
-        <Txt fontFamily={font} fontSize={40} fill={colors.textLight}>
-          {'diversity of grammar, syntax, knowledge, situations, context, …  ⇒  '}
-          <Txt fontWeight={600} fill={colors.index}>billions of knobs</Txt>
-        </Txt>
-      </Rect>
+        lines={[
+          [emphasis('Billions of knobs')],
+          [['to capture grammar, syntax, knowledge, situations, context…']],
+        ]}
+      />
     </>,
   );
 
@@ -440,15 +434,16 @@ export default makeScene2D(function* (view) {
   yield driveCogs(front.flat());
 
   // --- One cog: an adjustable weight -------------------------------------------
+  yield* waitUntil('cog');
   yield* all(focus.node.opacity(1, 0.8), closeUp().opacity(1, 0.8));
   yield* waitFor(1.2);
 
   yield* waitUntil('tune');
   const label = closeUp().children()[closeUp().children().length - 1];
   yield* all(label.opacity(1, 0.8), focus.knob(-90, 1.0, easeInOutCubic));
-  yield* waitFor(1.8);
+  yield* waitFor(1.2);
   yield* focus.knob(90, 1.2, easeInOutCubic);
-  yield* waitFor(1.8);
+  yield* waitFor(1.2);
   yield* focus.knob(0, 0.8, easeInOutCubic);
   yield* waitFor(0.8);
 
@@ -460,7 +455,7 @@ export default makeScene2D(function* (view) {
     counter().opacity(1, 0.6),
   );
   yield* all(...[focus, ...dozen].map((c, k) => c.knob(knobOf(k + 3), 0.8, easeInOutCubic)));
-  yield* waitFor(2);
+  yield* waitFor(1.2);
 
   // --- GPT-2 small: 12 layers × 12 heads × 768 dimensions ---------------------
   yield* waitUntil('gpt2');
@@ -491,11 +486,11 @@ export default makeScene2D(function* (view) {
     size.on(1, 0.8),
   );
   for (const m of MODELS.slice(1, -1)) {
-    yield* growTo(m, 1.3);
+    yield* growTo(m, 1.1);
     yield* waitFor(0.4); // a beat on each, so it registers
   }
   yield* growTo(GPT3, 2.2);
-  yield* waitFor(2);
+  yield* waitFor(1.2);
 
   // --- Today's largest: hundreds of billions -----------------------------------
   yield* waitUntil('today');
@@ -508,12 +503,13 @@ export default makeScene2D(function* (view) {
     magnitude().opacity(1, 0.8),
     tag("today's largest models", ''),
   );
-  yield* waitFor(2);
+  yield* waitFor(1.2);
 
   // --- Why so many? -----------------------------------------------------------
   yield* waitUntil('why');
-  yield* all(counter().opacity(0, 0.6), summary().opacity(1, 0.8));
-  yield* waitFor(4);
+  yield* all(counter().opacity(0, 0.6), settle(summary()));
+  yield* waitFor(2.5);
+  yield* waitUntil('scene-end');
 
   // Clear the stage for Scene 9.
   yield* all(...view.children().map(c => c.opacity(0, 0.8)));

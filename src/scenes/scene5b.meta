@@ -19,7 +19,11 @@
     },
     {
       "name": "zoom-screen",
-      "targetTime": 10.4
+      "targetTime": 10.931
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 18.411
     }
   ],
   "seed": 1566972313

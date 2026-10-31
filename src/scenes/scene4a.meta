@@ -2,20 +2,28 @@
   "version": 0,
   "timeEvents": [
     {
+      "name": "sentence",
+      "targetTime": 0.4
+    },
+    {
       "name": "split",
-      "targetTime": 2.4
+      "targetTime": 6.435
     },
     {
       "name": "column",
-      "targetTime": 5.7
+      "targetTime": 13.011
     },
     {
       "name": "lookup",
-      "targetTime": 8.600000000000001
+      "targetTime": 17.535
     },
     {
       "name": "fold",
-      "targetTime": 23.179999999999982
+      "targetTime": 27.555
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 29.655
     }
   ],
   "seed": 2800402491

@@ -5,12 +5,13 @@
 import {makeScene2D} from '@motion-canvas/2d';
 import {
   all,
-  easeOutBack,
   easeOutCubic,
   sequence,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
+import {Backdrop} from '../components/Titles';
 import {colors} from '../theme';
 import {fastForward, layerStep} from '../scene4/Core';
 import {MASTER} from '../scene4/layout';
@@ -22,6 +23,7 @@ export default makeScene2D(function* (view) {
   // Starts on 4b's last frame.
   const machine = createMachine('4c');
   const core = machine.core;
+  view.add(<Backdrop />);
   view.add(machine.node);
   yield* waitFor(0.5);
 
@@ -69,5 +71,6 @@ export default makeScene2D(function* (view) {
 
   yield* waitUntil('layer-n');
   yield* layerStep(core, 3, 4, 2.0);
-  yield* waitFor(1.5);
+  yield* waitFor(0.8);
+  yield* waitUntil('scene-end');
 });

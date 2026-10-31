@@ -2,32 +2,40 @@
   "version": 0,
   "timeEvents": [
     {
+      "name": "cog",
+      "targetTime": 0
+    },
+    {
       "name": "tune",
-      "targetTime": 2
+      "targetTime": 2.302
     },
     {
       "name": "dozen",
-      "targetTime": 9.4
+      "targetTime": 8.502
     },
     {
       "name": "gpt2",
-      "targetTime": 14.6
+      "targetTime": 12.902
     },
     {
       "name": "attention",
-      "targetTime": 20.2
+      "targetTime": 18.502
     },
     {
       "name": "gpt3",
-      "targetTime": 24.8
+      "targetTime": 23.102
     },
     {
       "name": "today",
-      "targetTime": 34.9
+      "targetTime": 31.802
     },
     {
       "name": "why",
-      "targetTime": 39.1
+      "targetTime": 35.585
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 43.672
     }
   ],
   "seed": 3520829884

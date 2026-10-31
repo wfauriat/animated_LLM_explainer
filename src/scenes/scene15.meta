@@ -1,0 +1,22 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "question",
+      "targetTime": 1.4
+    },
+    {
+      "name": "honest",
+      "targetTime": 4.643
+    },
+    {
+      "name": "title",
+      "targetTime": 11.553
+    },
+    {
+      "name": "end",
+      "targetTime": 15.153
+    }
+  ],
+  "seed": 2476478385
+}

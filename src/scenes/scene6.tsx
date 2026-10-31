@@ -16,8 +16,8 @@ import {
   createRef,
   createSignal,
   easeInOutCubic,
-  easeOutBack,
   easeOutCubic,
+  fadeTransition,
   linear,
   range,
   sequence,
@@ -27,8 +27,11 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
 import {Cog} from '../components/Cog';
 import {Curve, FlowDots} from '../components/Flow';
+import {Backdrop, emphasis, Takeaway} from '../components/Titles';
+import {settle} from '../motion';
 import {colors, font} from '../theme';
 import {createDepthDots, createDial, Dial} from '../scene4/Compass';
 import {embeddingAngle, FOLDED_SCALE} from '../scene4/layout';
@@ -94,7 +97,7 @@ const SIDE_IN_X = -760; // where the first sentence moves aside to
 const SPINE_X = -450;
 const ENTRY_X = -340;
 const LAYERS_X = [-110, 130];
-const OUT_X = [400, 680]; // output column next to the machine; aside
+const OUT_X = [400, 640]; // output column next to the machine; aside
 const NEXT_Y = [165, 275]; // N+1, N+2
 const PARK_Y = -110; // where the final "bank" dials are compared
 const DIAL = 64;
@@ -141,7 +144,7 @@ export default makeScene2D(function* (view) {
 
   // --- Build the machine ---------------------------------------------------
   const label = makeLabel('Attention');
-  label.position([0, -485]).opacity(0);
+  label.position([30, -456]).opacity(0);
   const inputs = [RIVER, MONEY].map(s =>
     s.tokens.map((t, i) =>
       makeChip(t, colors.token, {
@@ -165,7 +168,7 @@ export default makeScene2D(function* (view) {
             radius={COG_R}
             root={1 - 6 / COG_R}
             hole={0.22}
-            fill={'#5a6476'}
+            fill={colors.cog}
             rotation={() => colAngle[l]() + j * 9}
             scale={0}
           />
@@ -186,9 +189,11 @@ export default makeScene2D(function* (view) {
     ) as Node;
   });
   const outLayer = createRef<Node>();
+  const message = createRef<Rect>();
 
   view.add(
     <>
+      <Backdrop />
       <Node scale={STAGE.scale} x={STAGE.x}>
         <Rect
           ref={panel}
@@ -211,9 +216,16 @@ export default makeScene2D(function* (view) {
         <Node ref={outLayer} />
       </Node>
       {label}
+      <Takeaway
+        ref={message}
+        x={570}
+        y={-310}
+        lines={[[emphasis('Same token, same start')], [['the context changes where it points']]]}
+      />
     </>,
   );
   yield clock(1000, 1000, linear);
+  yield* fadeTransition(0.8);
 
   // --- Helpers ---------------------------------------------------------------
 
@@ -369,7 +381,7 @@ export default makeScene2D(function* (view) {
   yield* waitUntil('predict-1');
   const first: {arrow?: CubicBezier; group?: Node} = {};
   yield* predict(RIVER, first);
-  yield* waitFor(1);
+  yield* waitFor(0.5);
 
   // --- Phase 2: same machine, a second sentence ------------------------------
 
@@ -397,7 +409,7 @@ export default makeScene2D(function* (view) {
   yield* waitUntil('layer-1b');
   yield* enterLayer(0, 1.0);
   yield* attendAll(0, MONEY, range(1, BANK), 1.6);
-  yield* attend(0, MONEY, BANK, 2);
+  yield* attend(0, MONEY, BANK, 1.4);
   yield* clearLinks(0.4);
 
   yield* waitUntil('layer-2b');
@@ -411,7 +423,7 @@ export default makeScene2D(function* (view) {
   // --- Same word, different directions: both "bank" dials side by side -----
   yield* waitUntil('compare');
   yield* park(MONEY, {});
-  yield* riverBank.node!.opacity(1, 0.5);
-  yield* waitFor(3);
+  yield* all(riverBank.node!.opacity(1, 0.5), settle(message()));
+  yield* waitFor(1.5);
+  yield* waitUntil('scene-end');
 });
-

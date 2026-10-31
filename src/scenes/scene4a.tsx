@@ -6,13 +6,14 @@ import {
   all,
   createRef,
   easeInOutCubic,
-  easeOutBack,
   easeOutCubic,
   sequence,
   Vector2,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
+import {Backdrop} from '../components/Titles';
 import {colors} from '../theme';
 import {
   CHIP_W,
@@ -22,6 +23,8 @@ import {
   INDEX_X,
   LABEL_SCALE,
   LABEL_Y,
+  MACHINE_FIT,
+  MACHINE_Y,
   P_INDEX_X,
   P_TOKENS_X,
   pRowY,
@@ -60,7 +63,7 @@ export default makeScene2D(function* (view) {
   view.fill(colors.machineBg);
 
   const label = makeLabel('Tokenization');
-  label.position([0, -470]).opacity(0);
+  label.position([0, -456]).opacity(0);
   const dict = createDictionary();
   dict.node.opacity(0).scale(0.9);
   const bubble = createRef<Rect>();
@@ -70,15 +73,20 @@ export default makeScene2D(function* (view) {
   const question = makeQuestionChip();
   question.opacity(0);
   const indexLayer = createRef<Node>();
+  const backdrop = createRef<Rect>();
+  const stage = createRef<Node>();
 
   view.add(
     <>
+      <Backdrop ref={backdrop} opacity={0} />
+      <Node ref={stage}>
       <Rect ref={bubble} height={84} radius={[30, 30, 30, 8]} fill={colors.token} opacity={0} scale={0.8 * SENTENCE_SCALE} />
       {dict.node}
       {chips}
       {question}
       <Node ref={indexLayer} />
       {label}
+      </Node>
     </>,
   );
 
@@ -91,13 +99,15 @@ export default makeScene2D(function* (view) {
   bubble().width(sentenceW + 64);
 
   // --- The user's message ------------------------------------------------
+  yield backdrop().opacity(1, 1);
   yield* waitFor(0.4);
+  yield* waitUntil('sentence');
   yield* all(
     bubble().opacity(1, 0.3),
     bubble().scale(SENTENCE_SCALE, 0.5, easeOutBack),
     ...chips.map(c => c.opacity(1, 0.3)),
   );
-  yield* waitFor(1.5);
+  yield* waitFor(0.8);
 
   // --- It breaks into tokens ---------------------------------------------
   yield* waitUntil('split');
@@ -116,7 +126,7 @@ export default makeScene2D(function* (view) {
   );
   question.position([splitX[QUESTION_ROW] * SENTENCE_SCALE, 0]).scale(0.6);
   yield* all(question.opacity(1, 0.3), question.scale(SENTENCE_SCALE, 0.4, easeOutBack));
-  yield* waitFor(1.5);
+  yield* waitFor(0.8);
 
   // --- Tokens line up in a column; the dictionary opens -------------------
   yield* waitUntil('column');
@@ -176,15 +186,17 @@ export default makeScene2D(function* (view) {
     probe().remove();
   }
   for (let i = 0; i < TOKENS.length; i++) {
-    yield* lookup(i, i < 3 ? 1 : 0.4);
-    if (i < 3) yield* waitFor(0.3);
+    yield* lookup(i, i < 2 ? 0.9 : 0.3);
+    if (i < 2) yield* waitFor(0.2);
   }
-  yield* waitFor(1.5);
+  yield* waitFor(0.8);
 
   // --- Fold into the left of the machine ---------------------------------
   yield* waitUntil('fold');
   const fold = 1.6;
   yield* all(
+    stage().scale(MACHINE_FIT, fold, easeInOutCubic),
+    stage().y(MACHINE_Y, fold, easeInOutCubic),
     label.position([DICT_X, LABEL_Y], fold, easeInOutCubic),
     label.scale(LABEL_SCALE, fold, easeInOutCubic),
     dict.fold([DICT_X, SPINE_Y], fold),
@@ -202,4 +214,5 @@ export default makeScene2D(function* (view) {
     ),
   );
   yield* waitFor(0.5);
+  yield* waitUntil('scene-end');
 });

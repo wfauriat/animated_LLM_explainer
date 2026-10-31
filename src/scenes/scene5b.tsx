@@ -142,5 +142,6 @@ export default makeScene2D(function* (view) {
     room.dim.opacity(0, 2.0),
     room.character.opacity(0, 1.0),
   );
-  yield* waitFor(3);
+  yield* waitFor(1.5);
+  yield* waitUntil('scene-end');
 });

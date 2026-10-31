@@ -3,39 +3,43 @@
   "timeEvents": [
     {
       "name": "sources",
-      "targetTime": 0.4
+      "targetTime": 0.8
     },
     {
       "name": "flood",
-      "targetTime": 2.7
+      "targetTime": 6.635
     },
     {
       "name": "problems",
-      "targetTime": 14.2
+      "targetTime": 16.691
     },
     {
       "name": "clusters",
-      "targetTime": 17.05
+      "targetTime": 27.371
     },
     {
       "name": "round-1",
-      "targetTime": 20.75
+      "targetTime": 32.636
     },
     {
       "name": "round-2",
-      "targetTime": 26.1
+      "targetTime": 38.271
     },
     {
       "name": "round-3",
-      "targetTime": 30.75
+      "targetTime": 42.792
     },
     {
       "name": "pretraining",
-      "targetTime": 32.75
+      "targetTime": 44.142
     },
     {
       "name": "tuned",
-      "targetTime": 36.05
+      "targetTime": 47.942
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 58.342
     }
   ],
   "seed": 302470543

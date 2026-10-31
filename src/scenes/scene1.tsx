@@ -55,21 +55,21 @@ export default makeScene2D(function* (view) {
 
   yield* waitUntil('user-1');
   yield* userSends(chat, USER_1);
-  yield* waitFor(1.2);
+  yield* waitFor(0.8);
 
   yield* waitUntil('bot-1');
   yield* botTyping(chat, 1.3);
   yield* botReplies(chat, bot1());
-  yield* waitFor(3.2);
+  yield* waitFor(2.2);
 
   yield* waitUntil('user-2');
   yield* userSends(chat, USER_2);
-  yield* waitFor(1.2);
+  yield* waitFor(0.8);
 
   yield* waitUntil('bot-2');
   yield* botTyping(chat, 1.8);
   yield* botReplies(chat, <Letter />, LETTER_WIDTH);
-  yield* waitFor(4);
+  yield* waitFor(3);
 
   // Ends on the framing Scene 2 starts from.
   yield* waitUntil('zoom-out');
@@ -78,4 +78,5 @@ export default makeScene2D(function* (view) {
     world().position(ROOM_FULL.position, 2.8, easeInOutCubic),
   );
   yield* waitFor(1);
+  yield* waitUntil('scene-end');
 });

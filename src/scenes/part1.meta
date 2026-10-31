@@ -1,0 +1,14 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "card",
+      "targetTime": 0.8
+    },
+    {
+      "name": "card-end",
+      "targetTime": 4.7
+    }
+  ],
+  "seed": 2938433918
+}

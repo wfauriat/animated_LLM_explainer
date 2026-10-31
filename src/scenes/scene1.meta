@@ -7,19 +7,23 @@
     },
     {
       "name": "bot-1",
-      "targetTime": 4.391666666666667
+      "targetTime": 5.013
     },
     {
       "name": "user-2",
-      "targetTime": 9.941666666666666
+      "targetTime": 9.563
     },
     {
       "name": "bot-2",
-      "targetTime": 14.391666666666664
+      "targetTime": 13.613
     },
     {
       "name": "zoom-out",
-      "targetTime": 21.24166666666666
+      "targetTime": 21.5
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 25.442
     }
   ],
   "seed": 1795331278

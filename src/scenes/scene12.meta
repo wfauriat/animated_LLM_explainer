@@ -3,47 +3,51 @@
   "timeEvents": [
     {
       "name": "question",
-      "targetTime": 1.2000000000000002
+      "targetTime": 1.2
     },
     {
       "name": "reply",
-      "targetTime": 3.633333333333334
+      "targetTime": 8.146
     },
     {
       "name": "server",
-      "targetTime": 8.783333333333335
+      "targetTime": 15.093
     },
     {
       "name": "fine-tuning",
-      "targetTime": 13.783333333333335
+      "targetTime": 20.093
     },
     {
       "name": "examples",
-      "targetTime": 19.613333333333333
+      "targetTime": 25.923
     },
     {
       "name": "more-examples",
-      "targetTime": 33.83153831283206
+      "targetTime": 38.229
     },
     {
       "name": "policy",
-      "targetTime": 38.419768769779395
+      "targetTime": 42.792
     },
     {
       "name": "aligned",
-      "targetTime": 41.1197687697794
+      "targetTime": 45.094
     },
     {
       "name": "ask-again",
-      "targetTime": 47.34976876977939
+      "targetTime": 51.324
     },
     {
       "name": "answer",
-      "targetTime": 52.33310210311272
+      "targetTime": 56.307
     },
     {
       "name": "still-guessing",
-      "targetTime": 57.18310210311273
+      "targetTime": 60.157
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 66.363
     }
   ],
   "seed": 2749440496

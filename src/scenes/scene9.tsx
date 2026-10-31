@@ -16,16 +16,16 @@ import {
   chain,
   createRef,
   createSignal,
-  delay,
   easeInOutCubic,
-  easeOutBack,
-  linear,
   Vector2,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
-import {createTunableCog, driveCogs, TunableCog, turnNotch} from '../components/Cog';
-import {colors, font} from '../theme';
+import {easeOutBack} from '../motion';
+import {correctionWave, createTunableCog, driveCogs, TunableCog} from '../components/Cog';
+import {Backdrop, Caption} from '../components/Titles';
+import {rise} from '../motion';
+import {colors, font, type} from '../theme';
 import {createDial} from '../scene4/Compass';
 import {TOKENS} from '../scene4/layout';
 import {makeChip} from '../scene4/parts';
@@ -34,6 +34,8 @@ import {makeChip} from '../scene4/parts';
 
 const DIV_TOP_X = -250;
 const DIV_BOTTOM_X = -430;
+// The left panel fills the frame until the right one is needed.
+const LEFT_SHOT = {scale: 1.2, position: new Vector2(672, 96)};
 const ERROR = colors.error;
 const GOOD = colors.good;
 
@@ -92,7 +94,7 @@ const TRUTH = new Vector2(550, 100);
 const BOX = {w: 180, h: 62};
 const BRACKET_X = PRED.x + BOX.w / 2 + 30;
 const BADGE = new Vector2(BRACKET_X, (PRED.y + TRUTH.y) / 2);
-const GAUGE = new Vector2(770, BADGE.y);
+const GAUGE = new Vector2(740, BADGE.y);
 const GAUGE_H = 160;
 const GAUGE_W = 18;
 const EXAMPLE_Y = -330;
@@ -130,6 +132,7 @@ export default makeScene2D(function* (view) {
   const limb = {stroke: colors.silhouette, lineWidth: 34, lineCap: 'round' as const, lineJoin: 'round' as const};
 
   // --- Right panel ------------------------------------------------------------
+  const stage = createRef<Node>();
   const head = createRef<Node>();
   const layers = createRef<Node>();
   const dialGroup = createRef<Node>();
@@ -153,23 +156,27 @@ export default makeScene2D(function* (view) {
   const traces = createRef<Node>();
   const waves = createRef<Node>();
   const backprop = createRef<Node>();
-  const smallTxt = {fontFamily: font, fontSize: 24, fill: colors.label};
+  const backpropNote = createRef<Node>();
+  const smallTxt = {fontFamily: font, ...type.small, fill: colors.label};
+  const panelTitle = {fontFamily: font, ...type.title};
+  const panelSub = {fontFamily: font, fontSize: 28, fontStyle: 'italic', fill: colors.textMuted};
 
+  view.add(<Backdrop />);
   view.add(
-    <>
+    <Node ref={stage} scale={LEFT_SHOT.scale} position={LEFT_SHOT.position}>
       <Line
-        points={[[-960, -540], [DIV_TOP_X, -540], [DIV_BOTTOM_X, 540], [-960, 540]]}
+        points={[[-2600, -1200], [DIV_TOP_X + 110, -1200], [DIV_BOTTOM_X - 110, 1200], [-2600, 1200]]}
         closed
         fill={'#11141b'}
       />
-      <Line points={[[DIV_TOP_X, -540], [DIV_BOTTOM_X, 540]]} stroke={colors.divider} lineWidth={6} />
+      <Line points={[[DIV_TOP_X + 110, -1200], [DIV_BOTTOM_X - 110, 1200]]} stroke={colors.divider} lineWidth={6} />
 
       {/* Left: traditional software */}
       <Node ref={left} opacity={0}>
-        <Txt x={-640} y={-455} fontFamily={font} fontSize={46} fontWeight={600} fill={colors.textLight} text={'Traditional software'} />
-        <Txt x={-640} y={-405} fontFamily={font} fontSize={28} fontStyle={'italic'} fill={colors.textMuted} text={'specified by hand'} />
+        <Txt x={-600} y={-455} {...panelTitle} fill={colors.textLight} text={'Traditional software'} />
+        <Txt x={-600} y={-405} {...panelSub} text={'specified by hand'} />
         {L_ROWS.map((y, j) => (
-          <Txt ref={stepLabels[j]} x={STEP_X} y={y} fontFamily={font} fontSize={28} fontWeight={600} fill={STEP_COLORS[j]} text={`step ${j + 1}`} opacity={0} />
+          <Txt ref={stepLabels[j]} x={STEP_X} y={y} fontFamily={font} {...type.label} fill={STEP_COLORS[j]} text={`step ${j + 1}`} opacity={0} />
         ))}
         {stepArrows.map((ref, j) => (
           <Line ref={ref} points={[[STEP_X, L_ROWS[j] + 22], [STEP_X, L_ROWS[j + 1] - 22]]} stroke={colors.textMuted} lineWidth={2} endArrow arrowSize={8} opacity={0} />
@@ -189,16 +196,17 @@ export default makeScene2D(function* (view) {
 
       {/* Right: machine learning */}
       <Node ref={head} opacity={0}>
-        <Txt x={330} y={-455} fontFamily={font} fontSize={46} fontWeight={600} fill={colors.textLight} text={'Machine learning'} />
-        <Txt x={330} y={-405} fontFamily={font} fontSize={28} fontStyle={'italic'} fill={colors.textMuted} text={'data is the code (the program)'} />
-        <Rect layout alignItems={'center'} gap={12} x={330} y={EXAMPLE_Y} scale={0.6} opacity={0.6}>
+        <Txt x={330} y={-455} {...panelTitle} fill={colors.textLight} text={'Machine learning'} />
+        <Txt x={330} y={-405} {...panelSub} text={'data is the code (the program)'} />
+        <Rect layout alignItems={'center'} gap={12} x={330} y={EXAMPLE_Y} scale={0.6} opacity={0.75}>
           <Txt fontFamily={font} fontSize={40} fontWeight={600} fill={colors.label} text={'example:'} marginRight={10} />
           {TOKENS.map(t => makeChip(t, colors.token, {width: null, padding: [0, 20]}))}
           {makeChip('coat', colors.botBubble, {width: null, padding: [0, 20]})}
         </Rect>
       </Node>
       {/* The last two layers, scaled up to fill the panel */}
-      <Node position={[-30, 40]} scale={1.2}>
+      <Node position={[-30, 26]} scale={1.15}>
+        <Node ref={waves} />
         <Node ref={layers} opacity={0}>
           {layerN1.map(c => c.node)}
           {layerN.map(c => c.node)}
@@ -261,13 +269,10 @@ export default makeScene2D(function* (view) {
           </Node>
         </Node>
         <Node ref={traces} />
-        <Node ref={waves} />
       </Node>
-      <Node ref={backprop} opacity={0}>
-        <Txt x={300} y={440} fontFamily={font} fontSize={32} fill={colors.textLight} text={'backpropagation: correcting the error, layer by layer'} />
-        <Txt x={300} y={484} fontFamily={font} fontSize={24} fill={colors.textMuted} text={'(with automatic differentiation)'} />
-      </Node>
-    </>,
+      <Caption ref={backprop} x={300} y={410} parts={[['backpropagation:', colors.textLight, 700], ['correcting the error, layer by layer']]} />
+      <Caption ref={backpropNote} x={300} y={458} quiet parts={[['(with automatic differentiation)']]} />
+    </Node>,
   );
 
   // Every cog turns at the speed its notch sets. The left panel's cogs stop
@@ -310,40 +315,24 @@ export default makeScene2D(function* (view) {
   // an amount that follows the error too.
   function* signalBack(pace: number) {
     const err = error();
-    const front = createSignal(40);
-    const fade = createSignal(0);
-    const reach = 820;
-    const travel = 2.4 * pace;
-    const arcs = [0, 1, 2].map(
-      i =>
-        (
-          <Circle
-            position={GAUGE}
-            size={() => Math.max(0, front() - i * 36) * 2}
-            startAngle={145}
-            endAngle={215}
-            stroke={ERROR}
-            lineWidth={2 + 7 * err}
-            lineCap={'round'}
-            opacity={() => fade() * (1 - i * 0.3)}
-          />
-        ) as Circle,
-    );
-    waves().add(arcs);
-    const turns = [
-      ...layerN.map((c, k) => [c, PULL.n[k]] as const),
-      ...layerN1.map((c, k) => [c, PULL.n1[k]] as const),
-    ].map(([c, pull]) => {
-      const d = c.node.position().sub(GAUGE).magnitude - R_R;
-      return delay(((d - 40) / (reach - 40)) * travel, turnNotch(c, pull * err, 0.7 * pace, traces()));
-    });
     yield* all(
       gauge().scale(1.15, 0.15).to(1, 0.25),
-      front(reach, travel, linear),
-      chain(fade(1, 0.2), waitFor(travel - 0.5), fade(0, 0.3)),
-      ...turns,
+      correctionWave({
+        waves: waves(),
+        traces: traces(),
+        from: GAUGE,
+        arc: [145, 215],
+        reach: 820,
+        travel: 2.4 * pace,
+        width: 2 + 7 * err,
+        start: 40,
+        turnTime: 0.7 * pace,
+        turns: [
+          ...layerN.map((c, k): [TunableCog, number] => [c, PULL.n[k] * err]),
+          ...layerN1.map((c, k): [TunableCog, number] => [c, PULL.n1[k] * err]),
+        ],
+      }),
     );
-    arcs.forEach(a => a.remove());
   }
 
   function* verdict(word: string, right: boolean) {
@@ -385,17 +374,22 @@ export default makeScene2D(function* (view) {
       target(cogAt(i, j), 0.8, easeInOutCubic),
       stand(x, 0.8, easeInOutCubic),
     );
-    yield* all(twist(delta * 0.5, 0.9, easeInOutCubic), cog.knob(cog.knob() + delta, 0.9, easeInOutCubic));
+    yield* all(twist(delta * 0.5, 0.7, easeInOutCubic), cog.knob(cog.knob() + delta, 0.7, easeInOutCubic));
     yield* twist(0, 0.3);
-    yield* waitFor(0.4);
+    yield* waitFor(0.15);
   }
   yield* waitFor(0.6);
 
   // --- Right: the last two layers, and an example ---------------------------------
   yield* waitUntil('learning');
   cancel(leftDrive);
-  yield* all(left().opacity(0.4, 0.8), head().opacity(1, 0.8));
-  yield* waitFor(0.4);
+  yield* all(
+    left().opacity(0.4, 1.2),
+    stage().scale(1, 1.4, easeInOutCubic),
+    stage().position(Vector2.zero, 1.4, easeInOutCubic),
+    chain(waitFor(0.6), head().opacity(1, 0.8)),
+  );
+  yield* waitFor(0.2);
   yield* layers().opacity(1, 0.8);
   yield* waitFor(0.8);
   yield* all(dialGroup().opacity(1, 0.5), output().opacity(1, 0.5));
@@ -407,16 +401,17 @@ export default makeScene2D(function* (view) {
   yield* waitFor(0.6);
   yield* verdictGroup().opacity(1, 0.6);
   yield* error(ERRORS.house, 0.8, easeInOutCubic);
-  yield* waitFor(1);
+  yield* waitFor(0.6);
 
   // --- Round 1: "house" is wrong; the error tunes the last layers ------------------
   yield* waitUntil('backprop');
-  yield* backprop().opacity(1, 0.6);
+  yield* all(rise(backprop()), rise(backpropNote()));
   yield* round('hat', false, 1);
-  yield* waitFor(1);
+  yield* waitFor(0.6);
 
   // --- Round 2, faster: a smaller error, smaller turns, and "coat" is right ----------
   yield* waitUntil('round-2');
   yield* round('coat', true, 0.6);
-  yield* waitFor(3);
+  yield* waitFor(1.5);
+  yield* waitUntil('scene-end');
 });

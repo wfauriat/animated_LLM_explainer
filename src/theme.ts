@@ -73,8 +73,36 @@ export const colors = {
   dialFace: '#eef1f6',
   label: '#9aa3b2',
   attention: '#e58cf2', // Scene 6: links from earlier words
-  error: '#ff6b6b', // Scenes 9-10: wrong predictions, correction signals
-  good: '#5fd47a', // Scenes 9-10: right predictions
+  error: '#ff6b6b', // wrong predictions, correction signals
+  good: '#5fd47a', // right predictions
+
+  cog: '#5a6476', // the cogs of the machine, darker than the dials
+  panel: '#0f1218', // terminals, tiles and other insets on the machine background
+  takeawayBg: '#1a1608', // inside of the amber takeaway boxes
+  backdropGlow: '#121723', // center of the backdrop, fading out to machineBg
 };
 
+// The three dots of a window's title bar.
+export const windowDots = ['#ff5f57', '#febc2e', '#28c840'];
+
 export const font = 'Inter';
+
+// One type scale for the whole film (px on the 1920x1080 frame). Nothing meant
+// to be read goes below `small`; code and tensors may, as they read as texture.
+export const type = {
+  display: {fontSize: 72, fontWeight: 700}, // chapter cards
+  title: {fontSize: 44, fontWeight: 700}, // the title of a scene
+  heading: {fontSize: 34, fontWeight: 600}, // panels, sections
+  caption: {fontSize: 34, fontWeight: 500}, // lines under the action
+  body: {fontSize: 30, fontWeight: 400},
+  label: {fontSize: 26, fontWeight: 600}, // stages, axes, annotations
+  small: {fontSize: 22, fontWeight: 500},
+};
+
+// Title-safe area: nothing that must be read sits outside it (5% of the frame).
+export const safe = {x: 864, y: 486};
+
+// Where the recurring text elements sit.
+export const TITLE_Y = -456;
+export const CAPTION_Y = [404, 456];
+export const TAKEAWAY_Y = 424;

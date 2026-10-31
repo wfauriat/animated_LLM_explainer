@@ -2,40 +2,48 @@
   "version": 0,
   "timeEvents": [
     {
+      "name": "title",
+      "targetTime": 0.5
+    },
+    {
       "name": "request",
-      "targetTime": 1.2999999999999998
+      "targetTime": 5.594
     },
     {
       "name": "scaffold",
-      "targetTime": 5.15
+      "targetTime": 10.319
     },
     {
       "name": "adapted",
-      "targetTime": 11.749999999999998
+      "targetTime": 18.006
     },
     {
       "name": "expert",
-      "targetTime": 16.349999999999998
+      "targetTime": 22.706
     },
     {
       "name": "others-work",
-      "targetTime": 19.849999999999998
+      "targetTime": 27.6
     },
     {
       "name": "scale",
-      "targetTime": 26.549999999999997
+      "targetTime": 36.228
     },
     {
       "name": "limits",
-      "targetTime": 34.7391252520473
+      "targetTime": 44.159
     },
     {
       "name": "follow-up",
-      "targetTime": 41.5391252520473
+      "targetTime": 52.786
     },
     {
       "name": "jumpstart",
-      "targetTime": 45.989125252047295
+      "targetTime": 57.236
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 62.331
     }
   ],
   "seed": 2421809645

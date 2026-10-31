@@ -7,19 +7,23 @@
     },
     {
       "name": "learning",
-      "targetTime": 12.3
+      "targetTime": 10.2
     },
     {
       "name": "predict",
-      "targetTime": 16.2
+      "targetTime": 16.235
     },
     {
       "name": "backprop",
-      "targetTime": 22.8
+      "targetTime": 24.122
     },
     {
       "name": "round-2",
-      "targetTime": 31.9
+      "targetTime": 32.92
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 39.553
     }
   ],
   "seed": 3075143419

@@ -7,11 +7,15 @@
     },
     {
       "name": "question",
-      "targetTime": 8.55
+      "targetTime": 7.876
     },
     {
       "name": "reply",
-      "targetTime": 11.383333333333333
+      "targetTime": 10.709
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 15.222
     }
   ],
   "seed": 3710834914

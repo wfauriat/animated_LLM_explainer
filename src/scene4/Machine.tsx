@@ -13,6 +13,8 @@ import {
   FOLDED_SCALE,
   INDEX_X,
   LAYER_X,
+  MACHINE_FIT,
+  MACHINE_Y,
   rowY,
   UNEMBED_X,
   SPINE_H,
@@ -80,7 +82,7 @@ export function createMachine(stage: Stage): Machine {
   }
 
   const node = (
-    <Node>
+    <Node scale={MACHINE_FIT} y={MACHINE_Y}>
       {input.node}
       <Rect
         x={EMBED_X}

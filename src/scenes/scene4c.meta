@@ -7,27 +7,31 @@
     },
     {
       "name": "crank",
-      "targetTime": 5.235000000000003
+      "targetTime": 7.276
     },
     {
       "name": "layer-1",
-      "targetTime": 6.735000000000003
+      "targetTime": 9.578
     },
     {
       "name": "layer-2",
-      "targetTime": 9.935000000000002
+      "targetTime": 14.843
     },
     {
       "name": "layer-3",
-      "targetTime": 12.235000000000005
+      "targetTime": 17.515
     },
     {
       "name": "more-layers",
-      "targetTime": 13.835000000000006
+      "targetTime": 19.115
     },
     {
       "name": "layer-n",
-      "targetTime": 15.435000000000008
+      "targetTime": 22.528
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 27.408
     }
   ],
   "seed": 2476640184

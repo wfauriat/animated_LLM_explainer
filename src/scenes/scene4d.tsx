@@ -10,7 +10,6 @@ import {
   createRef,
   createSignal,
   easeInOutCubic,
-  easeOutBack,
   easeOutCubic,
   easeOutQuart,
   sequence,
@@ -18,11 +17,16 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
-import {colors, font} from '../theme';
+import {easeOutBack} from '../motion';
+import {Backdrop} from '../components/Titles';
+import {colors, font, type} from '../theme';
 import {
   CHIP_W,
   FOLDED_SCALE,
+  GEN_LABEL_X,
   LABEL_SCALE,
+  MACHINE_FIT,
+  MACHINE_Y,
   OUT_LABEL_Y,
   OUT_ROWS_Y,
   PICKED,
@@ -34,7 +38,6 @@ import {
   TOKENS_X,
   TOP5,
   TOP5_X,
-  WORDS_X,
 } from '../scene4/layout';
 import {createMachine} from '../scene4/Machine';
 import {createRoulette} from '../scene4/Output';
@@ -58,6 +61,7 @@ export default makeScene2D(function* (view) {
 
   view.add(
     <>
+      <Backdrop />
       {machine.node}
       <Rect ref={overlay} width={'100%'} height={'100%'} fill={colors.machineBg} opacity={0} />
       <Node ref={wheel} y={40} opacity={0} scale={0.8}>
@@ -77,9 +81,9 @@ export default makeScene2D(function* (view) {
         ref={subtitle}
         y={-355}
         fontFamily={font}
-        fontSize={30}
+        {...type.body}
         fill={colors.textLight}
-        text={'the G in GPT: it picks a likely next word, not always the most likely one'}
+        text={'the G in GPT: it picks a likely next token, not always the most likely one'}
         opacity={0}
       />
     </>,
@@ -133,7 +137,7 @@ export default makeScene2D(function* (view) {
     ),
   );
   yield* output.more.opacity(1, 0.3);
-  yield* waitFor(1.5);
+  yield* waitFor(0.8);
 
   // --- Inverse lookup: the dictionary maps indices back to words ---------
   yield* waitUntil('lookup');
@@ -154,7 +158,7 @@ export default makeScene2D(function* (view) {
       ),
     ),
   );
-  yield* waitFor(1.5);
+  yield* waitFor(0.8);
 
   // --- Generative: a weighted draw, not always the top choice -------------
   yield* waitUntil('generative');
@@ -175,7 +179,7 @@ export default makeScene2D(function* (view) {
     slice.lineWidth(8, 0.3),
     slice.scale(1.06, 0.3).to(1, 0.3),
   );
-  yield* waitFor(1.5);
+  yield* waitFor(0.8);
 
   // --- Back to the machine: the title becomes the "Generative" label ------
   yield* waitUntil('pick');
@@ -184,8 +188,8 @@ export default makeScene2D(function* (view) {
     wheel().opacity(0, 0.6),
     wheel().scale(0.6, 0.8),
     subtitle().opacity(0, 0.4),
-    title().position([WORDS_X, OUT_LABEL_Y], 1.0, easeInOutCubic),
-    title().scale((40 * LABEL_SCALE) / TITLE_FONT, 1.0, easeInOutCubic),
+    title().position([GEN_LABEL_X * MACHINE_FIT, OUT_LABEL_Y * MACHINE_FIT + MACHINE_Y], 1.0, easeInOutCubic),
+    title().scale(((40 * LABEL_SCALE) / TITLE_FONT) * MACHINE_FIT, 1.0, easeInOutCubic),
     title().fill(colors.label, 1.0),
   );
   output.genLabel.opacity(1);
@@ -208,7 +212,7 @@ export default makeScene2D(function* (view) {
   const traveler = makeChip(TOP5[PICKED].word, colors.botBubble, {scale: FOLDED_SCALE});
   const progress = createSignal(0);
   traveler.position(() => output.arrow.getPointAtPercentage(progress()).position);
-  view.add(traveler);
+  machine.node.add(traveler);
   yield* progress(1, 2.4, easeInOutCubic);
   traveler.position(traveler.position());
   yield* all(
@@ -218,5 +222,6 @@ export default makeScene2D(function* (view) {
   output.appended.opacity(1);
   traveler.remove();
   yield* output.appended.scale(FOLDED_SCALE * 1.15, 0.2).to(FOLDED_SCALE, 0.3);
-  yield* waitFor(2);
+  yield* waitFor(1);
+  yield* waitUntil('scene-end');
 });

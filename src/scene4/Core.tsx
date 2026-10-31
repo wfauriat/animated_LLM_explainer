@@ -8,11 +8,11 @@ import {
   createSignal,
   easeInOutCubic,
   easeInOutSine,
-  easeOutBack,
   SimpleSignal,
   ThreadGenerator,
   Vector2,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
 import {Cog} from '../components/Cog';
 import {colors, font} from '../theme';
 import {createDepthDots, createDial, depthShade, Dial} from './Compass';
@@ -66,7 +66,7 @@ export interface Core {
 const TOOTH_PITCH = 13.6; // same tooth size as the dial rims
 const PANEL_FILL = '#2fbf6a1c';
 const PANEL_STROKE = '#3ddc6a66';
-const COG_FILL = '#5a6476'; // darker than the dials, which carry the meaning
+const COG_FILL = colors.cog; // darker than the dials, which carry the meaning
 // Cogs on planes further back fade out, so the front plane reads clearly.
 const COG_OPACITY = [1, 0.5, 0.32, 0.2];
 

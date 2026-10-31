@@ -876,6 +876,75 @@ The running example is a booking app for a bike repair shop, in `src/scene13/par
 
 **Length:** the video is 620.6 s (10 min 21 s). Checked with stills; not yet rendered in full.
 
+## 47. Whole-film critique pass (branch `critique`)
+
+**Brief:** a critique of the whole animation, with full autonomy on this branch: corrections, cross-scene consistency, a more professional look, a voice-over proposal and a timing review. No full render, because `main` was rendering.
+
+**What the critique found.** The story and the visual idea were strong. The weaknesses were across the film rather than in one scene:
+- No acts and no ending, for a film of over 10 minutes.
+- Hard cuts between six pairs of scenes.
+- About 20 font sizes in use, and only 3 of the Inter weights loaded: 500, 700 and 800 silently fell back to the nearest loaded face.
+- Text up to 51 px outside the title-safe area (labels 20 px from the edge of the frame).
+- The same words varying: cogs/gears, weights/parameters, token/word.
+- Defects in single scenes: colliding text in the Scene 10 flood, moiré on the Scene 8 slabs, 14 s of empty frame in Scene 9, red waves crossing the text in Scene 9, a wall of text in Scene 11.
+
+**Structure:**
+- Cold open (Scenes 1-3), then **Part 1: The machine** (4-7), **Part 2: Building it** (8-11), **Part 3: From machine to assistant** (12-14), then a coda. `src/components/ChapterCard.tsx` draws the cards (`part1`-`part3`), with the film title "Inside a language model".
+- **Scene 15, the coda (provisional ending):** the first question of the film again, "Hello, who are you?". The avatar's face becomes a cog, the name becomes "Next-token guesser", and the honest answer is written token by token. Then the title. To end on Scene 14 instead, remove its line in `src/project.ts`.
+- Crossfades (`fadeTransition`) on 5b→6, 6→7a, 9→10, 10→11, 12→13 and 14→15.
+
+**Shared design system:**
+- `src/theme.ts`: one type scale (`type`), the title-safe area (`safe`), and the places of titles and captions.
+- `src/components/Titles.tsx`: `SceneTitle`, `Caption`, `Takeaway` (the amber box, now used for every scene's conclusion) and `Backdrop` (a subtle glow behind the action).
+- `src/motion.ts`: a softer pop (the stock `easeOutBack` overshoots too much for the tone), `rise` for text and `settle` for boxes.
+- All Inter weights used are now loaded.
+- `correctionWave()` in `Cog.tsx` replaces four copies of the red-arcs code (Scenes 9, 10, 12, 13).
+
+**Scene fixes:**
+- **Machine (4-5):** drawn at 92% (`MACHINE_FIT`) so that it sits inside the safe area. New notes: "about 50,000 tokens" on the dictionary; "one dial per dimension / 768 of them, in a small model" in 4b, which pays off in Scene 8.
+- **Scene 6:** a takeaway box at the end ("Same token, same start / the context changes where it points").
+- **Scene 7b:** no more empty frame between the chat and the context window. The closing text is in a takeaway box.
+- **Scene 8:** the slab texture is one whole cog per slab, which removes the moiré. A note says that each cog drawn stands for about a thousand weights, because 12 × 12 × 768 is not 124 million.
+- **Scene 9:** opens on the left panel, framed to fill the screen, then the camera moves to reveal the right one. The waves pass behind the boxes.
+- **Scene 10:** the flood uses lanes (a sentence flies from the center to its own slot, so nothing collides), and it is shorter (52 flights in 7.5 s). The closing has a **G · P · T** row whose letters light up in turn.
+- **Scene 11:** the figures became two cards with large numbers.
+- **Scene 13:** a label explains the sheets ("each sheet: someone's published work").
+- **Wording:** "gears" became "cogs", "parameters" became "weights", "next word" became "next token"; straight quotes are gone.
+
+**Voice-over (`voiceover/`):**
+- `script.md`: 1,564 words, one `[marker]` line at a time, in plain language. It avoids "notch", following the "no made-up terms" decision of section 22.
+- `tools/vofit.mjs`: estimates each line (2.7 words/s plus pauses) and moves the markers so that the picture waits for the voice. `--write` updates the `.meta` files, `timing.md` and `subtitles.srt`.
+- Silent holds were shortened, since the voice now sets the pace. Silences that are kept on purpose: the riddle, the example cards, the flood and the final answer.
+- A first draft of 1,805 words came to 15:36, so the script was cut by about 13%.
+- A new marker, `scene-end`, holds each scene until its last line is finished. The `dive` marker of Scene 3 is gone.
+
+**New tools:**
+- `tools/sweep.mjs` (`npm run sweep`): one forward pass, drawing only sampled frames, with per-scene contact sheets. The whole film in about 50 s, instead of about 40 minutes with `snap`. Crossfades only show in such a forward pass: seeking straight into one shows it without the previous scene.
+- `tools/audit.mjs` (`npm run audit`): checks all the text without drawing: what lies outside the safe area, and which texts overlap for more than 0.75 s.
+
+**Bugs met on the way:**
+- `view.insert()` puts nodes at index 0, so Scene 7b's content went under the new backdrop and the scene turned blank. The contact sheet caught it, and the content now goes in at index 1.
+- The first audit reported thousands of overlaps. Its transforms were multiplied in the wrong order, and it counted text hidden under veils and off-screen.
+
+**Final checks:** `tsc` is clean. The audit finds no static text outside the safe area beyond a 2 px comma, and the overlaps left are brief or deliberate (flying chips, a modal dialog, the flood's sentences in motion). All crossfades were checked in a forward pass.
+
+**Not verified:** no render, so nothing was watched in motion at full frame rate. The voice-over timing is an estimate.
+
+**Open for discussion:**
+- The ending (Scene 15) and the film title are proposals.
+- The "12 attention heads" axis of Scene 8 is a picture rather than a real dimension of the weights. The note softens this, but a picky viewer could still ask.
+- The characters of Scenes 9 and 13 are still simple shapes.
+- No music or sound design yet.
+
+**Length:** 9:49 without a voice; 13:05 with the estimated voice-over (9:40 of speech).
+
+**Follow-up (part cards):**
+- The user could not find the cards. They do render, but each was readable for only about 2 s, and on the timeline a card is an unlabelled sliver. The cards now hold for 5.3 s, and "Part N" is 48 px instead of 28 px. They sit at 1:13, 6:08 and 9:33.
+- `tools/vofit.mjs` no longer empties the `.meta` files while it measures, which was unsafe with an open editor tab. It takes the stored delays out of the measured times instead, and only writes files whose markers changed.
+- A marker stored earlier than the code reaches it gives a negative offset, which the engine treats as no wait. The tool clamps it to 0 (without this, the predicted length was 2.7 s too long).
+
+**Tool note:** a `npm start` tab left open across a server restart can stay on the old page. Check the length at the bottom right of the editor, and hard-refresh if it is wrong.
+
 ---
 
 ## How to render the full video
@@ -886,6 +955,6 @@ Close any `npm start` editor tab first (not required, but it frees the CPU). The
 npm run video
 ```
 
-This writes `output/project.mp4` (1920×1080, 60 fps, about 10 min 21 s). Expect it to take longer than the earlier 4-minute renders (20–25 minutes).
+This writes `output/project.mp4` (1920×1080, 60 fps, about 13 min with the voice-over timing). Expect it to take longer than the earlier renders (over 30 minutes).
 
 Alternatively, run `npm start`, open http://localhost:9000, go to Video Settings → Rendering, choose **Video (FFmpeg)** as the exporter, and click **Render**.

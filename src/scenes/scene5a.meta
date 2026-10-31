@@ -7,23 +7,27 @@
     },
     {
       "name": "shrink",
-      "targetTime": 3
+      "targetTime": 7.076
     },
     {
       "name": "sentence",
-      "targetTime": 4.4
+      "targetTime": 9.748
     },
     {
       "name": "generate",
-      "targetTime": 6.95
+      "targetTime": 12.298
     },
     {
       "name": "standby",
-      "targetTime": 14.9
+      "targetTime": 23.519
     },
     {
       "name": "envelope",
-      "targetTime": 17.4
+      "targetTime": 26.561
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 30.139
     }
   ],
   "seed": 1811069866

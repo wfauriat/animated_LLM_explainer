@@ -15,8 +15,8 @@ import {
   createRef,
   createSignal,
   delay,
-  easeOutBack,
   easeOutCubic,
+  fadeTransition,
   linear,
   range,
   sequence,
@@ -24,14 +24,16 @@ import {
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
-import {createTunableCog, driveCogs, turnNotch} from '../components/Cog';
+import {easeOutBack} from '../motion';
+import {correctionWave, createTunableCog, driveCogs, TunableCog} from '../components/Cog';
+import {Backdrop, emphasis, SceneTitle} from '../components/Titles';
 import {Words} from '../components/Words';
-import {colors, font} from '../theme';
+import {rise} from '../motion';
+import {colors, font, type} from '../theme';
 import {TOKENS} from '../scene4/layout';
 import {makeChip} from '../scene4/parts';
 import {positionIn} from '../layout';
 
-const HEADER_Y = -480;
 const SECTION_X = -800; // left edge of the section headings
 const SOURCES_TITLE_Y = -390;
 const ICONS_X = -200;
@@ -42,6 +44,7 @@ const PROBLEMS_TITLE_Y = -150;
 const PROBLEMS_Y = -55;
 const PROBLEM_STEP = 50;
 const CHIP_SCALE = 0.62;
+const MASK = '#00000000';
 const SLOT_W = 130; // prediction and truth chips, in chip units
 const TRUTH_X = -95; // the truths, in one column right of the longest problem
 const chipStyle = {width: null as null, padding: [0, 16] as [number, number]};
@@ -56,11 +59,15 @@ const ROUNDS = [
   ['was', 'rain', 'ing', 'out', 'side', ',', 'it', 'stayed', 'hat'],
   ['was', 'rain', 'ing', 'out', 'side', 'and', 'he', 'took', 'coat'],
 ];
-// The burst stays in the lower region, below the sources.
+// The burst stays in the lower region, below the sources. Each sentence flies
+// from the center out to its own slot (a lane, left or right of the center),
+// and a slot is not reused before its sentence has faded: nothing collides.
 const BURST = new Vector2(0, 170);
 const BURST_TOP = -195;
+const LANES = 11;
+const LANE_H = 58;
 const BURST_COLORS = [colors.token, colors.botBubble, colors.dictionary, colors.embedding, colors.index, colors.attention];
-const CLUSTER = new Vector2(725, -190); // the server racks, on the right
+const CLUSTER = new Vector2(695, -190); // the server racks, on the right
 const RACK_SCALE = 0.75;
 const RACK_STEP = {x: 120, y: 187}; // in rack units
 const RACKS_LEFT = CLUSTER.x - (1.5 * RACK_STEP.x + 37) * RACK_SCALE - 14;
@@ -68,7 +75,7 @@ const RACKS_LEFT = CLUSTER.x - (1.5 * RACK_STEP.x + 37) * RACK_SCALE - 14;
 // one row of servers.
 const GROUPS = [[0, 2], [3, 5], [6, 7]];
 const BRACKET_X = TRUTH_X + (SLOT_W * CHIP_SCALE) / 2 + 24;
-const CORNER = new Vector2(630, 290); // the dozen notches, bottom right
+const CORNER = new Vector2(555, 290); // the dozen notches, bottom right
 const CORNER_STEP = 92;
 const CORNER_R = 36;
 // The correction signal: from the problems toward the notches.
@@ -91,6 +98,12 @@ const BAR_X = -260;
 const BAR_W = 1000;
 const BAR_H = 60;
 const LEGEND_X = -700;
+const GPT = [
+  {letter: 'G', rest: 'enerative', color: colors.botBubble},
+  {letter: 'P', rest: 're-trained', color: colors.energy},
+  {letter: 'T', rest: 'ransformer', color: colors.energy},
+];
+const GPT_DIM = 0.3;
 
 // A little of everything, in English: topics and syntaxes vary.
 const SENTENCES = [
@@ -234,7 +247,7 @@ function Rack({x, y, clock, seed}: {x: number; y: number; clock: () => number; s
 export default makeScene2D(function* (view) {
   view.fill(colors.machineBg);
   const clock = createSignal(0);
-  const heading = {fontFamily: font, fontSize: 30, fontWeight: 600, fill: colors.textLight, offsetX: -1};
+  const heading = {fontFamily: font, ...type.heading, fill: colors.textLight, offsetX: -1};
 
   // --- Sources ---------------------------------------------------------------
   const sources = [
@@ -246,7 +259,7 @@ export default makeScene2D(function* (view) {
   ].map(({icon, label}, k) => (
     <Node position={[ICONS_X + (k - 2) * ICON_STEP, ICONS_Y]} scale={0}>
       {icon}
-      <Txt y={92} fontFamily={font} fontSize={30} fill={colors.label} text={label} />
+      <Txt y={92} fontFamily={font} fontSize={30} fontWeight={500} fill={colors.label} text={label} />
     </Node>
   ) as Node);
 
@@ -259,14 +272,14 @@ export default makeScene2D(function* (view) {
     if (n === 0) {
       return (<Txt x={SECTION_X + 30} y={y} fontFamily={font} fontSize={30} fill={colors.label} text={'⋮'} opacity={0} />) as Txt;
     }
-    const slot = makeChip('?', '#00000000', {
+    const slot = makeChip('?', MASK, {
       width: SLOT_W,
       stroke: colors.botBubble,
       lineWidth: 3,
       lineDash: [10, 8],
       textFill: colors.botBubble,
     });
-    const truth = makeChip(FULL[n], '#00000000', {
+    const truth = makeChip(FULL[n], MASK, {
       width: SLOT_W,
       stroke: colors.botBubble,
       lineWidth: 3,
@@ -287,7 +300,7 @@ export default makeScene2D(function* (view) {
     ) as Node;
   });
 
-  const header = createRef<Txt>();
+  const header = createRef<Rect>();
   const predLabel = createRef<Txt>();
   const truthLabel = createRef<Txt>();
   const sourcesTitle = createRef<Txt>();
@@ -298,12 +311,13 @@ export default makeScene2D(function* (view) {
   const traces = createRef<Node>();
   const brackets = GROUPS.map(() => createRef<Line>());
   const veil = createRef<Rect>();
-  const pretraining = [createRef<Rect>(), createRef<Rect>()];
+  const pretraining = createRef<Rect>();
+  const gpt = createRef<Rect>();
+  const gptLetters = GPT.map(() => createRef<Rect>());
   const tunedTitle = createRef<Txt>();
   const legend = [createRef<Node>(), createRef<Node>(), createRef<Node>()];
   const bars = SHARES.map(() => ({node: createRef<Node>(), grow: createSignal(0), labels: createRef<Node>()}));
   const note = createRef<Txt>();
-  const amber = colors.energy;
   const swatch = (fill: string) => <Rect width={28} height={28} radius={5} fill={fill} />;
   const links = GROUPS.map(() => createRef<CubicBezier>());
   const waves = createRef<Node>();
@@ -316,12 +330,13 @@ export default makeScene2D(function* (view) {
 
   view.add(
     <>
+      <Backdrop />
       <Node>
-        <Txt ref={header} y={HEADER_Y} fontFamily={font} fontSize={44} fontWeight={600} fill={colors.textLight} text={'"Self-supervised" learning: on gigantic amounts of texts / contexts'} opacity={0} />
+        <SceneTitle ref={header} opacity={0} parts={[['Self-supervised learning:'], emphasis('a mountain of text')]} />
         <Txt ref={sourcesTitle} x={SECTION_X} y={SOURCES_TITLE_Y} {...heading} text={'Sources'} opacity={0} />
         {sources}
       </Node>
-      <Txt ref={problemsTitle} x={SECTION_X} y={PROBLEMS_TITLE_Y} {...heading} text={'Tons of prediction problems (highly parallelizable, using masking)'} opacity={0} />
+      <Txt ref={problemsTitle} x={SECTION_X} y={PROBLEMS_TITLE_Y} {...heading} text={'Trillions of prediction problems: mask the next token, then guess'} opacity={0} />
       {problems}
       {/* Column labels over the first problem (placed once laid out) */}
       <Txt ref={predLabel} offsetX={1} fontFamily={font} fontSize={22} fill={colors.label} text={'prediction'} opacity={() => problems[0].opacity()} />
@@ -364,7 +379,7 @@ export default makeScene2D(function* (view) {
             <Rack x={((k % 4) - 1.5) * RACK_STEP.x} y={(Math.floor(k / 4) - 1) * RACK_STEP.y} clock={clock} seed={k} />
           ))}
         </Node>
-        <Txt x={CLUSTER.x} y={110} fontFamily={font} fontSize={30} fontWeight={600} fill={colors.textLight} text={'Distributed training on enormous clusters (trillions of tokens)'} width={360} textWrap textAlign={'center'} />
+        <Txt x={CLUSTER.x} y={112} fontFamily={font} {...type.label} fill={colors.textLight} text={'Highly parallel: distributed training on enormous clusters'} width={330} textWrap textAlign={'center'} />
       </Node>
       <Rect clip y={(BURST_TOP + 540) / 2} width={1920} height={540 - BURST_TOP}>
         <Node ref={burst} y={-(BURST_TOP + 540) / 2} />
@@ -372,14 +387,22 @@ export default makeScene2D(function* (view) {
 
       {/* The closing: Pre-Training, and what gets tuned */}
       <Rect ref={veil} width={1920} height={1080} fill={colors.machineBg} opacity={0} />
-      <Words ref={pretraining[0]} y={-410} fontSize={58} gap={18} opacity={0} parts={[['This process is'], ['“Pre-Training”', amber, 700]]} />
-      <Words ref={pretraining[1]} y={-335} fontSize={36} gap={10} opacity={0} parts={[['(the', colors.textMuted], ['P', amber, 700], ['in GPT)', colors.textMuted]]} />
-      <Txt ref={tunedTitle} x={LEGEND_X} offsetX={-1} y={-215} fontFamily={font} fontSize={42} fontWeight={600} fill={colors.textLight} text={'Parameters getting “tuned” (in order to be a "better guesser"):'} opacity={0} />
+      <Words ref={pretraining} y={-430} fontSize={52} gap={16} opacity={0} parts={[['This process is'], ['“Pre-Training”', colors.energy, 700]]} />
+      {/* The letters of GPT: G came with the generative pick (Scene 4) */}
+      <Rect ref={gpt} layout gap={44} y={-345} opacity={0}>
+        {GPT.map((g, i) => (
+          <Rect ref={gptLetters[i]} alignItems={'baseline'} opacity={GPT_DIM}>
+            <Txt fontFamily={font} fontSize={48} fontWeight={800} fill={g.color} text={g.letter} />
+            <Txt fontFamily={font} fontSize={30} fontWeight={500} fill={colors.textLight} text={g.rest} />
+          </Rect>
+        ))}
+      </Rect>
+      <Txt ref={tunedTitle} x={LEGEND_X} offsetX={-1} y={-235} fontFamily={font} {...type.title} fontSize={40} fill={colors.textLight} text={'What gets tuned, to be a better guesser:'} opacity={0} />
       <Node ref={legend[0]} opacity={0}>
-        <Words x={LEGEND_X + 40} offsetX={-1} y={-145} fontSize={36} gap={10} parts={[['the stack of transformer layers'], ['(the', colors.textMuted], ['T', amber, 700], ['in GPT)', colors.textMuted]]} />
+        <Words x={LEGEND_X + 40} offsetX={-1} y={-165} fontSize={34} gap={10} parts={[['the stack of transformer layers']]} />
       </Node>
       <Node ref={legend[1]} opacity={0}>
-        <Rect layout alignItems={'center'} gap={14} x={LEGEND_X + 80} offsetX={-1} y={-85}>
+        <Rect layout alignItems={'center'} gap={14} x={LEGEND_X + 80} offsetX={-1} y={-105}>
           {swatch(colors.attention)}
           <Txt fontFamily={font} fontSize={32} fill={colors.textLight} text={'attention heads'} />
           <Txt fontFamily={font} fontSize={32} fill={colors.textMuted} text={'+'} marginLeft={6} marginRight={6} />
@@ -388,10 +411,10 @@ export default makeScene2D(function* (view) {
         </Rect>
       </Node>
       <Node ref={legend[2]} opacity={0}>
-        <Rect layout alignItems={'center'} gap={14} x={LEGEND_X + 40} offsetX={-1} y={-15}>
-          <Txt fontFamily={font} fontSize={36} fill={colors.textMuted} text={'+'} marginRight={4} />
+        <Rect layout alignItems={'center'} gap={14} x={LEGEND_X + 40} offsetX={-1} y={-35}>
+          <Txt fontFamily={font} fontSize={34} fill={colors.textMuted} text={'+'} marginRight={4} />
           {swatch(colors.embedding)}
-          <Txt fontFamily={font} fontSize={36} fill={colors.textLight} text={'the embedding table'} />
+          <Txt fontFamily={font} fontSize={34} fontWeight={500} fill={colors.textLight} text={'the embedding table'} />
         </Rect>
       </Node>
       {SHARES.map((b, i) => {
@@ -421,7 +444,7 @@ export default makeScene2D(function* (view) {
           </Node>
         );
       })}
-      <Txt ref={note} y={320} fontFamily={font} fontSize={28} fontStyle={'italic'} fill={colors.textMuted} text={'share of the parameters: as models grow, the layers take almost all of it'} opacity={0} />
+      <Txt ref={note} y={320} fontFamily={font} fontSize={28} fontStyle={'italic'} fill={colors.textMuted} text={'share of the weights: as models grow, the layers take almost all of them'} opacity={0} />
     </>,
   );
 
@@ -433,21 +456,20 @@ export default makeScene2D(function* (view) {
 
   yield clock(1000, 1000, linear);
   yield driveCogs(corner);
+  yield* fadeTransition(0.8);
 
   // A sentence flies out from the center, toward one of 8 directions,
   // slowing down while still on screen so it can be read. It is anchored on
   // its outer end, so it trails back toward the center rather than off screen.
   function* fly(text: string, k: number, duration: number) {
-    const angle = k * 45 + ((k * 53) % 40) - 20;
-    const dir = Vector2.fromDegrees(angle);
-    const reach = 1 + ((k * 37) % 160) / 600;
-    const to = BURST.add([dir.x * 520 * reach, dir.y * 330 * reach]);
+    const side = k % 2 ? 1 : -1;
+    const lane = (k * 7) % LANES;
     const t = (
       <Txt
         position={BURST}
-        offsetX={dir.x * 0.8}
+        offsetX={-side}
         fontFamily={font}
-        fontSize={34 + ((k * 7) % 12)}
+        fontSize={30 + ((k * 7) % 9)}
         fontWeight={500}
         fill={BURST_COLORS[k % BURST_COLORS.length]}
         text={text}
@@ -456,9 +478,11 @@ export default makeScene2D(function* (view) {
       />
     ) as Txt;
     burst().add(t);
+    const inner = Math.min(36 + ((k * 37) % 4) * 34, 900 - t.width());
+    const to = new Vector2(side * inner, BURST.y + (lane - (LANES - 1) / 2) * LANE_H);
     yield* all(
       t.position(to, duration, easeOutCubic),
-      t.scale(1.1, duration, easeOutCubic),
+      t.scale(1, duration, easeOutCubic),
       t.opacity(1, duration * 0.15).to(1, duration * 0.55).to(0, duration * 0.3),
     );
     t.remove();
@@ -491,39 +515,24 @@ export default makeScene2D(function* (view) {
   function* correct(words: string[], pace: number) {
     const wrong = slots.filter((_, k) => words[k] !== TRUTHS[k]);
     yield* all(...wrong.map(s => s.scale(1.12, 0.15).to(1, 0.25)));
-    const front = createSignal(30);
-    const fade = createSignal(0);
-    const reach = 1040;
-    const travel = 2.2 * pace;
-    const arcs = [0, 1, 2].map(
-      i =>
-        (
-          <Circle
-            position={SIGNAL_FROM}
-            size={() => Math.max(0, front() - i * 40) * 2}
-            startAngle={SIGNAL_ANGLE - 14}
-            endAngle={SIGNAL_ANGLE + 14}
-            stroke={colors.error}
-            lineWidth={2 + wrong.length * 1.2}
-            lineCap={'round'}
-            opacity={() => fade() * (1 - i * 0.3)}
-          />
-        ) as Circle,
-    );
-    waves().add(arcs);
-    const turns = corner.map((c, k) => {
-      const d = c.node.position().sub(SIGNAL_FROM).magnitude - CORNER_R;
-      return delay(((d - 30) / (reach - 30)) * travel, turnNotch(c, PULL[k] * 45 * (wrong.length / 6), 0.7 * pace, traces()));
+    yield* correctionWave({
+      waves: waves(),
+      traces: traces(),
+      from: SIGNAL_FROM,
+      arc: [SIGNAL_ANGLE - 14, SIGNAL_ANGLE + 14],
+      reach: 1040,
+      travel: 2.2 * pace,
+      width: 2 + wrong.length * 1.2,
+      spacing: 40,
+      turnTime: 0.7 * pace,
+      turns: corner.map((c, k): [TunableCog, number] => [c, PULL[k] * 45 * (wrong.length / 6)]),
     });
-    yield* all(front(reach, travel, linear), chain(fade(1, 0.2), waitFor(travel - 0.5), fade(0, 0.3)), ...turns);
-    arcs.forEach(a => a.remove());
   }
 
   // --- Where the text comes from ------------------------------------------------
-  yield* waitFor(0.4);
   yield* waitUntil('sources');
   yield* all(
-    header().opacity(1, 0.6),
+    rise(header()),
     sourcesTitle().opacity(1, 0.6),
     sequence(0.2, ...sources.map(s => s.scale(ICON_SCALE, 0.5, easeOutBack))),
   );
@@ -531,10 +540,9 @@ export default makeScene2D(function* (view) {
 
   // --- All the available text: a flood of every kind ------------------------------
   yield* waitUntil('flood');
-  // Each sentence goes out twice, in different directions, a little faster
-  // as it goes: start times bunch up toward the end.
-  const flights = [...SENTENCES, ...SENTENCES];
-  const start = (k: number) => 9 * (1 - Math.pow(1 - k / flights.length, 1.6));
+  // A little faster as it goes: start times bunch up toward the end.
+  const flights = [...SENTENCES, ...SENTENCES.slice(0, 20)];
+  const start = (k: number) => 7.5 * (1 - Math.pow(1 - k / flights.length, 1.3));
   yield* all(...flights.map((s, k) => delay(start(k), fly(s, k, 2.6))));
 
   // --- That text, cut into next-token problems, and the machine ------------------
@@ -560,18 +568,21 @@ export default makeScene2D(function* (view) {
     yield* correct(words, paces[r]);
     yield* waitFor(0.6);
   }
-  yield* waitFor(1.5);
+  yield* waitFor(0.8);
 
   // --- This process is Pre-Training ------------------------------------------------
   yield* waitUntil('pretraining');
-  yield* all(veil().opacity(0.985, 0.8), pretraining[0]().opacity(1, 0.8));
-  yield* pretraining[1]().opacity(1, 0.5);
-  yield* waitFor(2);
+  yield* all(veil().opacity(0.985, 0.8), rise(pretraining(), 0.8));
+  yield* gpt().opacity(1, 0.5);
+  yield* gptLetters[0]().opacity(1, 0.4);
+  yield* waitFor(0.3);
+  yield* gptLetters[1]().opacity(1, 0.4);
+  yield* waitFor(1.4);
 
   // --- What gets tuned -------------------------------------------------------------
   yield* waitUntil('tuned');
   yield* tunedTitle().opacity(1, 0.5);
-  yield* sequence(0.5, ...legend.map(l => l().opacity(1, 0.5)));
+  yield* sequence(0.5, ...legend.map(l => l().opacity(1, 0.5)), gptLetters[2]().opacity(1, 0.5));
   yield* waitFor(0.6);
   for (const b of bars) {
     yield* b.node().opacity(1, 0.3);
@@ -580,5 +591,6 @@ export default makeScene2D(function* (view) {
     yield* waitFor(0.4);
   }
   yield* note().opacity(1, 0.6);
-  yield* waitFor(5);
+  yield* waitFor(2.5);
+  yield* waitUntil('scene-end');
 });

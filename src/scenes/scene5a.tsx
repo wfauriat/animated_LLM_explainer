@@ -21,6 +21,7 @@ import {
   waitUntil,
 } from '@motion-canvas/core';
 import {Battery, createBattery} from '../components/Battery';
+import {Backdrop} from '../components/Titles';
 import {positionIn} from '../layout';
 import {colors, font} from '../theme';
 import {Core} from '../scene4/Core';
@@ -28,6 +29,8 @@ import {
   CHIP_W,
   FOLDED_SCALE,
   LABEL_SCALE,
+  MACHINE_FIT,
+  MACHINE_Y,
   MASTER,
   OUT_EXIT_X,
   OUT_ROWS_Y,
@@ -71,10 +74,12 @@ export default makeScene2D(function* (view) {
   // Starts on 4d's last frame: crank in hand, the N+1 arrow still showing.
   const machine = createMachine('5a');
   const {core, output} = machine;
+  machine.node.scale(1).y(0); // the rig holds the fit, for the battery and N+1 too
   const battery = createBattery(clock, POWER_BATTERY, MASTER.addX(40));
   battery.node.y(800);
 
   const rig = createRef<Node>();
+  const backdrop = createRef<Rect>();
   const bubble = createRef<Rect>();
   const flyLayer = createRef<Node>();
   const standby = createRef<Node>();
@@ -89,7 +94,8 @@ export default makeScene2D(function* (view) {
 
   view.add(
     <>
-      <Node ref={rig}>
+      <Backdrop ref={backdrop} />
+      <Node ref={rig} scale={MACHINE_FIT} y={MACHINE_Y}>
         {machine.node}
         <Node ref={n1} opacity={0}>
           <Line
@@ -125,7 +131,7 @@ export default makeScene2D(function* (view) {
       <Node ref={flyLayer} />
       <Node ref={standby} position={[560, 470]} opacity={0}>
         <Circle ref={standbyDot} x={-70} size={18} fill={colors.energy} />
-        <Txt x={10} fontFamily={font} fontSize={28} fill={colors.label} text={'standby'} />
+        <Txt x={10} fontFamily={font} fontSize={26} fontWeight={600} fill={colors.label} text={'standby'} />
       </Node>
       {envelope}
     </>,
@@ -218,8 +224,10 @@ export default makeScene2D(function* (view) {
     bubble().fill(colors.botBubble, 0.8),
     rig().opacity(0, 0.8),
     standby().opacity(0, 0.6),
+    backdrop().opacity(0, 0.8), // Scene 5b starts on the cavity's flat color
   );
   envelope.opacity(1);
   bubble().opacity(0);
   yield* waitFor(0.6);
+  yield* waitUntil('scene-end');
 });

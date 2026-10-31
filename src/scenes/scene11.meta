@@ -3,39 +3,43 @@
   "timeEvents": [
     {
       "name": "machine",
-      "targetTime": 0.3
+      "targetTime": 0.8
     },
     {
       "name": "x-ray",
-      "targetTime": 2.8
+      "targetTime": 4.043
     },
     {
       "name": "vectors",
-      "targetTime": 7.9
+      "targetTime": 9.143
     },
     {
       "name": "matrices",
-      "targetTime": 9.6
+      "targetTime": 14.237
     },
     {
       "name": "silicon",
-      "targetTime": 12.8
+      "targetTime": 19.331
     },
     {
       "name": "layers",
-      "targetTime": 16.3
+      "targetTime": 25.707
     },
     {
       "name": "scale",
-      "targetTime": 23.05
+      "targetTime": 32.824
     },
     {
       "name": "training",
-      "targetTime": 29.25
+      "targetTime": 45.156
     },
     {
       "name": "conclusion",
-      "targetTime": 33.65
+      "targetTime": 50.42
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 56.996
     }
   ],
   "seed": 3420227453

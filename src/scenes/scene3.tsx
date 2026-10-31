@@ -106,10 +106,10 @@ export default makeScene2D(function* (view) {
     server.coverMover.scale(COVER_ASIDE_SCALE, 1.8, easeInOutCubic),
     chain(waitFor(0.5), flipCover(server)),
   );
-  yield* waitFor(4);
+  yield* waitFor(2.5);
+  yield* waitUntil('scene-end');
 
   // Dive into the open cabinet: Scene 4 starts inside, on the cavity color.
-  yield* waitUntil('dive');
   yield* all(
     camera().scale(DIVE_ZOOM, 2.2, easeInCubic),
     camera().position(CAVITY_CENTER.scale(-DIVE_ZOOM), 2.2, easeInCubic),

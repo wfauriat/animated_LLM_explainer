@@ -5,7 +5,6 @@ import {
   chain,
   createRef,
   createRefArray,
-  easeOutBack,
   linear,
   loop,
   range,
@@ -14,7 +13,9 @@ import {
   ThreadGenerator,
   waitFor,
 } from '@motion-canvas/core';
-import {colors, font} from '../theme';
+import {easeOutBack} from '../motion';
+import {colors, font, windowDots} from '../theme';
+import {Cog} from './Cog';
 
 const BUBBLE_MAX_W = 940;
 
@@ -32,6 +33,10 @@ export interface ChatRefs {
   placeholder: Reference<Txt>;
   caret: Reference<Rect>;
   send: Reference<Circle>;
+  avatar: Reference<Circle>;
+  face: Reference<Node>;
+  avatarCog: Reference<Node>;
+  name: Reference<Txt>;
 }
 
 export function createChatRefs(): ChatRefs {
@@ -41,26 +46,35 @@ export function createChatRefs(): ChatRefs {
     placeholder: createRef<Txt>(),
     caret: createRef<Rect>(),
     send: createRef<Circle>(),
+    avatar: createRef<Circle>(),
+    face: createRef<Node>(),
+    avatarCog: createRef<Node>(),
+    name: createRef<Txt>(),
   };
 }
 
 // Small round face used as the assistant's avatar: it seeds the
-// "friendly persona" that later scenes unmask.
-function BotAvatar() {
+// "friendly persona" that later scenes unmask. The closing scene swaps the face
+// for a cog.
+function BotAvatar({refs}: {refs: ChatRefs}) {
   return (
-    <Circle size={54} fill={colors.botAvatar}>
-      <Circle layout={false} x={-9} y={-6} size={8} fill={colors.bubbleText} />
-      <Circle layout={false} x={9} y={-6} size={8} fill={colors.bubbleText} />
-      <Circle
-        layout={false}
-        y={1}
-        size={26}
-        startAngle={25}
-        endAngle={155}
-        stroke={colors.bubbleText}
-        lineWidth={3}
-        lineCap={'round'}
-      />
+    <Circle ref={refs.avatar} size={54} fill={colors.botAvatar}>
+      <Node ref={refs.face}>
+        <Circle x={-9} y={-6} size={8} fill={colors.bubbleText} />
+        <Circle x={9} y={-6} size={8} fill={colors.bubbleText} />
+        <Circle
+          y={1}
+          size={26}
+          startAngle={25}
+          endAngle={155}
+          stroke={colors.bubbleText}
+          lineWidth={3}
+          lineCap={'round'}
+        />
+      </Node>
+      <Node ref={refs.avatarCog} opacity={0}>
+        <Cog teeth={10} radius={24} root={0.78} hole={0.26} fill={colors.dialFace} stroke={colors.dialFace} />
+      </Node>
     </Circle>
   );
 }
@@ -77,9 +91,7 @@ export function ChatApp({refs}: {refs: ChatRefs}) {
         padding={[0, 20]}
         gap={10}
       >
-        <Circle size={14} fill={'#ff5f57'} />
-        <Circle size={14} fill={'#febc2e'} />
-        <Circle size={14} fill={'#28c840'} />
+        {windowDots.map(c => <Circle size={14} fill={c} />)}
         <Txt
           {...label}
           grow={1}
@@ -99,11 +111,9 @@ export function ChatApp({refs}: {refs: ChatRefs}) {
         padding={[0, 36]}
         gap={18}
       >
-        <BotAvatar />
+        <BotAvatar refs={refs} />
         <Rect direction={'column'} gap={4}>
-          <Txt {...label} fontSize={26} fontWeight={600}>
-            Assistant
-          </Txt>
+          <Txt ref={refs.name} {...label} fontSize={26} fontWeight={600} text={'Assistant'} />
           <Rect alignItems={'center'} gap={8}>
             <Circle size={10} fill={colors.online} />
             <Txt {...label} fontSize={18} fill={colors.textMuted}>

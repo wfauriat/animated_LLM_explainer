@@ -46,6 +46,10 @@ export const SPINE_H = 680;
 export const SPINE_Y = rowY(5);
 export const LABEL_Y = -420;
 export const LABEL_SCALE = 0.75;
+// The overview fills the frame edge to edge: drawn at this scale, everything
+// sits inside the title-safe area.
+export const MACHINE_FIT = 0.92;
+export const MACHINE_Y = 10;
 
 // ---------------------------------------------------------------------------
 // Embedding vectors ("compass" stacks) and the rows of the core
@@ -130,6 +134,7 @@ export const UNEMBED_H = 560;
 export const TOP5_X = 520;
 export const LOOKUP_X = 690;
 export const WORDS_X = 840;
+export const GEN_LABEL_X = WORDS_X - 18; // centered would cross the margin
 export const OUT_LABEL_Y = -300;
 export const N1_X = 925; // N+1 loop: down the right edge ...
 export const N1_Y = 505; // ... and back along the bottom

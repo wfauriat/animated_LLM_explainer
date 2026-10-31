@@ -6,13 +6,13 @@ import {
   all,
   createSignal,
   easeInOutCubic,
-  easeOutBack,
   easeOutCubic,
   linear,
   sequence,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
 import {blinkCaret} from '../components/ChatApp';
 import {createNetwork} from '../components/Network';
 import {FACE, faceIdle} from '../components/Server';
@@ -48,7 +48,7 @@ export default makeScene2D(function* (view) {
   yield* room.socket.opacity(1, 0.4);
   yield* room.cable.end(1, 1.2);
   yield* room.cableFlows.opacity(1, 0.6);
-  yield* waitFor(1.5);
+  yield* waitFor(1);
 
   yield* waitUntil('split');
   yield* all(
@@ -83,7 +83,7 @@ export default makeScene2D(function* (view) {
   yield* waitUntil('user-wire');
   yield* net.userWire.end(1, 0.8);
   yield* net.userFlows.opacity(1, 0.5);
-  yield* waitFor(1.5);
+  yield* waitFor(1);
 
   yield* waitUntil('many-users');
   yield* sequence(
@@ -97,5 +97,6 @@ export default makeScene2D(function* (view) {
     ),
   );
   yield* net.flows.opacity(1, 0.6);
-  yield* waitFor(5);
+  yield* waitFor(2.5);
+  yield* waitUntil('scene-end');
 });

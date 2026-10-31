@@ -7,23 +7,27 @@
     },
     {
       "name": "generate",
-      "targetTime": 4.594000000000001
+      "targetTime": 5.765
     },
     {
       "name": "look-back",
-      "targetTime": 8.494
+      "targetTime": 10.289
     },
     {
       "name": "guess",
-      "targetTime": 13.394000000000002
+      "targetTime": 20.939
     },
     {
       "name": "pick",
-      "targetTime": 16.194000000000003
+      "targetTime": 27.715
     },
     {
       "name": "as-if",
-      "targetTime": 20.194000000000006
+      "targetTime": 31.715
+    },
+    {
+      "name": "scene-end",
+      "targetTime": 39.031
     }
   ],
   "seed": 1189213722

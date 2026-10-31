@@ -12,19 +12,21 @@ import {
   createSignal,
   easeInOutCubic,
   easeInOutSine,
-  easeOutBack,
   linear,
   sequence,
   Vector2,
   waitFor,
   waitUntil,
 } from '@motion-canvas/core';
+import {easeOutBack} from '../motion';
 import {ChatApp, createChatRefs} from '../components/ChatApp';
 import {Cog} from '../components/Cog';
 import {Curve, FlowDots} from '../components/Flow';
 import {Desk, Monitor} from '../components/Monitor';
 import {CHAT_ZOOM, positionIn} from '../layout';
-import {colors, font} from '../theme';
+import {Backdrop, Takeaway} from '../components/Titles';
+import {settle} from '../motion';
+import {colors, font, type} from '../theme';
 import {CHIP_H} from '../scene4/layout';
 import {makeChip, makeLabel} from '../scene4/parts';
 import {ANSWER, QUESTION, RIDDLE, showRiddle, tokenize} from '../scene7/parts';
@@ -74,8 +76,8 @@ function promptWeights() {
 // --- Layout -----------------------------------------------------------------
 
 const RIBBON_SCALE = 0.8;
-const RIBBON_W = 1720; // on screen
-const RIBBON_TOP = -440;
+const RIBBON_W = 1672; // on screen
+const RIBBON_TOP = -396;
 const FRAME_PAD = 28;
 const TIP = new Vector2(-330, 250); // the machine, below the ribbon
 const COG_R = 62;
@@ -83,7 +85,6 @@ const LINK_END = TIP.addY(-COG_R - 12);
 const TOP5_POS = new Vector2(-200, 150); // top-left of the Top-5 list
 const TOP5_SCALE = 0.7;
 const BAR_W = 520;
-const CAPTION_Y = 445;
 const chipStyle = {width: null as null, padding: [0, 16] as [number, number]};
 
 export default makeScene2D(function* (view) {
@@ -93,6 +94,8 @@ export default makeScene2D(function* (view) {
   // --- Starts on 7a's last frame: the finished exchange on the chat screen ----
   const chat = createChatRefs();
   const world = createRef<Node>();
+  const backdrop = createRef<Rect>();
+  view.add(<Backdrop ref={backdrop} opacity={0} />);
   view.add(
     <Node ref={world} scale={CHAT_ZOOM}>
       <Desk />
@@ -112,7 +115,7 @@ export default makeScene2D(function* (view) {
   const cogAngle = createSignal(0);
   const flyLayer = createRef<Node>();
   const top5 = createRef<Rect>();
-  const caption = createRef<Node>();
+  const takeaway = createRef<Rect>();
 
   const promptChips = PROMPT.map(t => makeChip(t, colors.token, {...chipStyle, opacity: 0}));
   const replyChips: Rect[] = [];
@@ -144,8 +147,7 @@ export default makeScene2D(function* (view) {
         y={RIBBON_TOP - FRAME_PAD - 34}
         offsetX={-1}
         fontFamily={font}
-        fontSize={32}
-        fontWeight={600}
+        {...type.label}
         fill={colors.label}
         text={'Context window'}
         opacity={0}
@@ -166,7 +168,7 @@ export default makeScene2D(function* (view) {
         {promptChips}
       </Rect>
       <Node ref={cog} position={TIP} scale={0}>
-        <Cog teeth={14} radius={COG_R} root={0.84} hole={0.24} fill={'#5a6476'} rotation={cogAngle} />
+        <Cog teeth={14} radius={COG_R} root={0.84} hole={0.24} fill={colors.cog} rotation={cogAngle} />
       </Node>
       <Rect
         ref={top5}
@@ -188,18 +190,15 @@ export default makeScene2D(function* (view) {
       </Rect>
       {heading}
       <Node ref={flyLayer} />
-      <Node ref={caption} y={CAPTION_Y}>
-        <Txt fontFamily={font} fontSize={40} fill={colors.textLight} opacity={0}>
-          {'Guessing correctly means looking at context, clues and facts… '}
-          <Txt fontStyle={'italic'} fontWeight={600} fill={colors.attention}>
-            as if reasoning
-          </Txt>
-        </Txt>
-        <Txt y={56} fontFamily={font} fontSize={30} fill={colors.textMuted} opacity={0}>
-          (and answering properly implies correct grammar, syntax, …)
-        </Txt>
-      </Node>
+      <Takeaway
+        ref={takeaway}
+        lines={[
+          [['Guessing well takes context, clues and facts…'], ['as if reasoning', colors.energy, 700, true]],
+          [['and answering well takes grammar, syntax, knowledge…', colors.textLight]],
+        ]}
+      />
     </>,
+    1, // above the backdrop, under the chat
   );
   yield clock(1000, 1000, linear);
   yield* waitFor(0.5);
@@ -253,9 +252,10 @@ export default makeScene2D(function* (view) {
   yield* all(
     world().scale(CHAT_ZOOM * 1.15, 1.0, easeInOutCubic),
     world().opacity(0, 1.0),
+    backdrop().opacity(1, 1.0),
+    chain(waitFor(0.4), all(frame().end(1, 1.0, easeInOutCubic), frameLabel().opacity(1, 0.6))),
   );
   world().remove();
-  yield* all(frame().end(1, 1.0, easeInOutCubic), frameLabel().opacity(1, 0.6));
   yield* sequence(0.012, ...promptChips.map(c => c.opacity(1, 0.25)));
   yield* waitFor(0.8);
 
@@ -283,7 +283,7 @@ export default makeScene2D(function* (view) {
     cogAngle(cogAngle() + 30, 0.9, easeInOutSine),
   );
   yield* all(...strong.map(k => k.dots!.opacity(0.3 + 0.7 * k.w, 0.3)));
-  yield* waitFor(2.5);
+  yield* waitFor(1.5);
 
   // --- ... and makes its guess ------------------------------------------------
   yield* waitUntil('guess');
@@ -294,7 +294,7 @@ export default makeScene2D(function* (view) {
     heading.opacity(1, 0.5),
     ...top5Bars.map((b, i) => b().width(BAR_W * TOP5[i][1], 0.8, easeInOutCubic)),
   );
-  yield* waitFor(2);
+  yield* waitFor(1);
 
   // --- "Colonel" is picked, then the name is finished -----------------------
   yield* waitUntil('pick');
@@ -317,11 +317,9 @@ export default makeScene2D(function* (view) {
 
   // --- What it takes to guess well -------------------------------------------
   yield* waitUntil('as-if');
-  const [line1, line2] = caption().children();
-  yield* line1.opacity(1, 0.8);
-  yield* waitFor(1.2);
-  yield* line2.opacity(1, 0.8);
-  yield* waitFor(4);
+  yield* settle(takeaway());
+  yield* waitFor(3);
+  yield* waitUntil('scene-end');
 
   // Clear the stage for Scene 8.
   yield* all(...view.children().map(c => c.opacity(0, 0.8)));
